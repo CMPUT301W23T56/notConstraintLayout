@@ -5,6 +5,7 @@ public class Heart extends Shape{
     private String meaning;
     private String feature;
 
+    private String color = "blue";
 
     public Heart(String meaning, String feature) {
         this.meaning = meaning;

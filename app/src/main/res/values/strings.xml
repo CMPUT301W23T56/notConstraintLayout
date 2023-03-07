@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">notConstraintLayout</string>
+
+    <string name="title_dasboard">Dashboard</string>
+    <string name="title_explore">Explore</string>
+    <string name="title_leaderboard">Leaderboard</string>
 </resources>

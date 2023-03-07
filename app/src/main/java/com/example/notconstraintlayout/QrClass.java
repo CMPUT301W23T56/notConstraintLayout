@@ -19,7 +19,7 @@ public class QrClass {
     }
 
 
-    private int computeScore(String Value) {
+    static int computeScore(String Value) {
         // Calculate SHA-256 hash of the QR Value contents
         String sha256 = "";   // This variable will be used to store the SHA-256 hash value
         try {
@@ -53,7 +53,7 @@ public class QrClass {
         return score;
     }
 
-    private String bytesToHex(byte[] bytes) {
+    private static String bytesToHex(byte[] bytes) {
         StringBuilder hex = new StringBuilder();
         for (byte b : bytes) {
             hex.append(String.format("%02x", b)); // converts the current byte to a two-digit hexadecimal string [The String should have minimum length of 2 characters]
@@ -61,7 +61,7 @@ public class QrClass {
         return hex.toString();
     }
 
-    private String calculateName(String code) {
+    static String calculateName(String code) {
         String[] bit0 = {"cool", "hot"};
         String[] bit1 = {"Fro", "Glo"};
         String[] bit2 = {"Mo", "Lo"};

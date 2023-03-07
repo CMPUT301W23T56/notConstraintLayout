@@ -50,19 +50,15 @@ public class ScannerActivity extends AppCompatActivity {
     }
 
     //  This sets up a mechanism for launching a barcode scanner activity and receiving its result, which can then be used to process the scanned barcode data in the app
-    ActivityResultLauncher<ScanOptions> barCodeLauncher = registerForActivityResult(new ScanContract(), result ->
-    {
-        // Show the result of scanned QR code in the text
+    ActivityResultLauncher<ScanOptions> barCodeLauncher = registerForActivityResult(new ScanContract(), result -> {
         if (result.getContents() != null) {
-            String name = calculateName(result.getContents());
-            int score = computeScore(result.getContents());
-            new AlertDialog.Builder(this)
-                    .setTitle("Score and Name")
-                    .setMessage("Your score is: " + score + "\nYour Name is: " + name)
-                    .setPositiveButton(android.R.string.ok, null)
-                    .show(); // Show alertDialogue box to the user
+            QrClass qr = new QrClass(result.getContents());
+            String name = qr.calculateName(result.getContents());
+            int score = qr.computeScore(result.getContents());
+            ScanResultFragment.newInstance(score, name).show(getSupportFragmentManager(), null);
         }
     });
+
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {

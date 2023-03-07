@@ -13,7 +13,10 @@ import androidx.navigation.ui.NavigationUI;
 
 import com.example.notconstraintlayout.databinding.ActivityMainBinding;
 
+import com.google.firebase.firestore.FirebaseFirestore;
+
 public class MainActivity extends AppCompatActivity {
+    FirebaseFirestore db = FirebaseFirestore.getInstance();
 
     private ActivityMainBinding binding;
     FirebaseFirestore db = FirebaseFirestore.getInstance();

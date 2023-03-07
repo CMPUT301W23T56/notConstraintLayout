@@ -7,7 +7,8 @@ public class UserProfile {
     private String username;
     private int totalScore;
     private int totalScanned;
-    //private ArrayList<QrCode> scannedQrCodes;
+    private ArrayList<QrCode> scannedQrCodes;
+
 
     public UserProfile(String contactInfo, String username) {
         this.contactInfo = contactInfo;
@@ -49,11 +50,11 @@ public class UserProfile {
         this.totalScanned = totalScanned;
     }
 
-   // public ArrayList<QrCode> getScannedQrCodes() {
-        //return scannedQrCodes;
-    //}
-//
-//    public void setScannedQrCodes(ArrayList<QrCode> scannedQrCodes) {
-//        this.scannedQrCodes = scannedQrCodes;
-//    }
+    public ArrayList<QrCode> getScannedQrCodes() {
+        return scannedQrCodes;
+    }
+
+    public void setScannedQrCodes(ArrayList<QrCode> scannedQrCodes) {
+        this.scannedQrCodes = scannedQrCodes;
+    }
 }

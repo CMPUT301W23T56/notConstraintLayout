@@ -31,7 +31,6 @@ public class scanner extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.xyz);
-
         scannedCodes = new ArrayList<>();
 
         scan_button = findViewById(R.id.scan_button);

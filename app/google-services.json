@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "640561070740",
+    "project_id": "notconstraintlayout",
+    "storage_bucket": "notconstraintlayout.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:640561070740:android:65d4b46e797bd08b76ea81",
+        "android_client_info": {
+          "package_name": "com.example.notconstraintlayout"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "640561070740-1noqppla46ibijmifo5608k9bo12jonq.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAWBhJLEi_-Dpc3PwdjZOLrwJEFLAb9XmE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "640561070740-1noqppla46ibijmifo5608k9bo12jonq.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

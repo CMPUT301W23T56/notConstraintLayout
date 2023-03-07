@@ -9,6 +9,7 @@ public class UserProfile {
     private int totalScanned;
     private ArrayList<QrCode> scannedQrCodes;
 
+
     public UserProfile(String contactInfo, String username) {
         this.contactInfo = contactInfo;
         this.username = username;

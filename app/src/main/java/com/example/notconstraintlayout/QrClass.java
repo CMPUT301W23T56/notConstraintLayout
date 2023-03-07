@@ -1,5 +1,7 @@
 package com.example.notconstraintlayout;
 
+import android.graphics.Bitmap;
+
 import com.google.type.LatLng;
 
 import java.nio.charset.StandardCharsets;
@@ -12,12 +14,43 @@ import java.util.regex.Pattern;
 public class QrClass {
     private String hash;
     private LatLng location;
+    private String name = calculateName(hash);
+    private int points = computeScore(hash);
+    private String face;
+    private Bitmap location_image;
 
 
     public QrClass(String hash) {
         this.hash = hash;
     }
 
+    public LatLng getLocation() {
+        return location;
+    }
+
+    public void setLocation(LatLng location) {
+        this.location = location;
+    }
+
+    public Bitmap getLocation_image() {
+        return location_image;
+    }
+
+    public void setLocation_image(Bitmap location_image) {
+        this.location_image = location_image;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public int getPoints() {
+        return points;
+    }
+
+    public String getFace() {
+        return face;
+    }
 
     private int computeScore(String Value) {
         // Calculate SHA-256 hash of the QR Value contents

@@ -3,4 +3,7 @@
     <string name="score_format">Score: %d</string>
     <string name="name_format">Name: %s</string>
     <string name="scan_result_title">Scan Result</string>
+    <string name="title_dasboard">Dashboard</string>
+    <string name="title_explore">Explore</string>
+    <string name="title_leaderboard">Leaderboard</string>
 </resources>

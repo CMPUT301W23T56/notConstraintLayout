@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/navigation_dashboard"
+        android:icon="@drawable/baseline_home_24"
+        android:iconTint="@color/black"
+        android:title="@string/title_dasboard" />
+
+    <item
+        android:id="@+id/navigation_explore"
+        android:icon="@drawable/baseline_qr_code_scanner_24"
+        android:iconTint="@color/white"
+        android:title="@string/title_explore" />
+
+    <item
+        android:id="@+id/navigation_leaderboard"
+        android:icon="@drawable/baseline_leaderboard_24"
+        android:title="@string/title_leaderboard" />
+
+</menu>

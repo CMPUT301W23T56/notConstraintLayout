@@ -2,7 +2,6 @@ package com.example.notconstraintlayout;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.view.View;
 
 import com.google.gson.Gson;
 
@@ -16,7 +15,7 @@ public class UserProfile {
     private ArrayList<QrClass> scannedQrCodes;
     private Context context;
 
-    public UserProfile(View.OnClickListener context) {
+    public UserProfile(Context context) {
         this.context = context;
     }
 

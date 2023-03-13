@@ -1,4 +1,4 @@
-package com.example.notconstraintlayout;
+package com.example.notconstraintlayout.ui.leaderboard;
 
 public class PlayerListClass {
     String playerName, playerPoint;

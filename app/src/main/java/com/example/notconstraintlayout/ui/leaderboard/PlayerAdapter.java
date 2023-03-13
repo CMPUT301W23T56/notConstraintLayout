@@ -1,4 +1,4 @@
-package com.example.notconstraintlayout;
+package com.example.notconstraintlayout.ui.leaderboard;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -8,20 +8,21 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import java.util.ArrayList;
 
-import io.grpc.Context;
+import com.example.notconstraintlayout.R;
+
+import java.util.ArrayList;
 
 public class PlayerAdapter extends RecyclerView.Adapter<PlayerAdapter.MyHolder> {
 
-    Context context;
+    LeaderBoardFragment context;
     ArrayList<PlayerListClass> arrayList;
     LayoutInflater layoutInflater;
 
-    public PlayerAdapter(LeaderBoardActivity context, ArrayList<PlayerListClass> arrayList) {
-        //this.context = context;
+    public PlayerAdapter(LeaderBoardFragment context, ArrayList<PlayerListClass> arrayList) {
+        this.context = context;
         this.arrayList = arrayList;
-        layoutInflater = LayoutInflater.from(context);
+        layoutInflater = LayoutInflater.from(context.getActivity());
     }
 
     @NonNull
@@ -54,4 +55,3 @@ public class PlayerAdapter extends RecyclerView.Adapter<PlayerAdapter.MyHolder> 
         }
     }
 }
-

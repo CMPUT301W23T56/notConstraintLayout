@@ -1,4 +1,4 @@
-package com.example.notconstraintlayout;
+package com.example.notconstraintlayout.ui.dashboard;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -9,6 +9,8 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.fragment.app.DialogFragment;
+
+import com.example.notconstraintlayout.R;
 
 public class ScanResultFragment extends DialogFragment {
 

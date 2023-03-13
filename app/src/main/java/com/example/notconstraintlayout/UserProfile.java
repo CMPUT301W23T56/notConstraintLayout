@@ -3,14 +3,14 @@ package com.example.notconstraintlayout;
 import java.util.ArrayList;
 
 public class UserProfile {
-    private String contactInfo;
+    private int contactInfo;
     private String username;
     private int totalScore;
     private int totalScanned;
     private ArrayList<QrClass> scannedQrCodes;
 
 
-    public UserProfile(String contactInfo, String username) {
+    public UserProfile(int contactInfo, String username) {
         this.contactInfo = contactInfo;
         this.username = username;
     }
@@ -18,11 +18,11 @@ public class UserProfile {
     public UserProfile() {
     }
 
-    public String getContactInfo() {
+    public int getContactInfo() {
         return contactInfo;
     }
 
-    public void setContactInfo(String contactInfo) {
+    public void setContactInfo(int contactInfo) {
         this.contactInfo = contactInfo;
     }
 

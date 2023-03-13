@@ -3,8 +3,10 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_alignParentLeft="true"
     android:layout_marginLeft="0dp"
+    android:id="@+id/textDashboard"
     android:layout_alignParentTop="true"
     android:layout_marginTop="0dp"
     android:background="@color/light_blue"
@@ -23,6 +25,7 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="0dp"
             android:text="Hello,"
+            android:textStyle="bold"
             android:textColor="@color/black"
             android:textSize="40dp"/>
 
@@ -62,6 +65,7 @@
             android:layout_height="match_parent"
             android:text="Ada LoveLace"
             android:textColor="@color/black"
+            android:textStyle="bold"
             android:textSize="40dp"/>
 
 
@@ -102,7 +106,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="0dp"
-            android:text="                   "
+            android:text="                "
             android:textColor="@color/black"
             android:textSize="20dp"/>
 
@@ -111,9 +115,19 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="0dp"
-            android:text="Total scanned:"
+            android:text="Total scanned:         "
             android:textColor="@color/black"
             android:textSize="20dp"/>
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/my_fab"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_add_qr"
+            app:fabSize="normal"
+            app:backgroundTint="@color/orange" />
+
+
     </LinearLayout>
 
     <LinearLayout
@@ -136,7 +150,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="0dp"
-            android:text="                      "
+            android:text="                  "
             android:textColor="@color/black"
             android:textSize="20dp"/>
 
@@ -170,7 +184,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:background="@color/dusty_blue">
+        android:background="@color/skyblue">
 
 
         <TextView
@@ -201,13 +215,25 @@
             android:textSize="20dp"/>
     </LinearLayout>
 
-    <ListView
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/dusty_blue">
+        android:background="@color/skyblue"
+        android:orientation="vertical">
+
+        <ListView
+            android:id="@+id/myListView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/skyblue">
+
+        </ListView>
 
 
-    </ListView>
+    </LinearLayout>
+
+
+
 
 </LinearLayout>
 

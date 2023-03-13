@@ -1,5 +1,6 @@
 package com.example.notconstraintlayout;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -80,6 +81,7 @@ public class LoginActivity extends AppCompatActivity {
                     usernameEditText.setText("");
                     userContactEditText.setText("");
                 }
+                startActivity(new Intent(LoginActivity.this, MainActivity.class));
             }
         });
 
@@ -98,5 +100,6 @@ public class LoginActivity extends AppCompatActivity {
                 UserProfileAdapter.notifyDataSetChanged(); // Notifying the adapter to render any new data fetched from the cloud
             }
         });
+
     }
 }

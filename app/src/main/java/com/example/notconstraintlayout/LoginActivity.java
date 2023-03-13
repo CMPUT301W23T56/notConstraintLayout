@@ -32,6 +32,7 @@ public class LoginActivity extends AppCompatActivity {
 
     ArrayList<UserProfile> userProfileList;
     ArrayAdapter<UserProfile> UserProfileAdapter;
+    private UserProfile userProfile;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,6 +55,7 @@ public class LoginActivity extends AppCompatActivity {
             public void onClick(View view) {
                 final String username = usernameEditText.getText().toString();
                 final int userContact = Integer.parseInt(userContactEditText.getText().toString());
+                userProfile = new UserProfile(this);
 
                 HashMap<String, Integer> data = new HashMap<>();
                 if (username.length()>0 && String.valueOf(userContact).length()>0) {

@@ -6,20 +6,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     tools:context=".ui.leaderboard.LeaderBoardFragment">
-    <TextView
-        android:id="@+id/textLeaderboard"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="8dp"
-        android:textAlignment="center"
-        android:textSize="20sp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        />
+
 
     <android.widget.SearchView
         android:id="@+id/leader_board_search"
@@ -32,12 +19,10 @@
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycle_view"
         android:layout_width="match_parent"
+        android:layout_below="@+id/leader_board_search"
         android:layout_height="wrap_content"
-        android:layout_below="@id/textLeaderboard"
         android:layout_marginStart="10dp"
-        android:layout_marginTop="16dp"
         android:layout_marginEnd="10dp"
-        android:layout_marginBottom="60dp"
         android:scrollbars="vertical" />
 
     <LinearLayout

@@ -24,7 +24,6 @@ import com.example.notconstraintlayout.R;
 import java.util.ArrayList;
 
 import com.example.notconstraintlayout.databinding.FragmentLeaderboardBinding;
-
 public class LeaderBoardFragment extends Fragment {
 
     SearchView searchView;
@@ -48,8 +47,8 @@ public class LeaderBoardFragment extends Fragment {
         binding = FragmentLeaderboardBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
 
-        final TextView textView = binding.textLeaderboard;
-        leaderboardViewModel.getText().observe(getViewLifecycleOwner(), textView::setText);
+        //final SearchView textView = binding.leaderBoardSearch;
+        //leaderboardViewModel.getText().observe(getViewLifecycleOwner(), textView::setText);
 
         super.onCreate(savedInstanceState);
 

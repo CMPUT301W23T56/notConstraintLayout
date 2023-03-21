@@ -1,8 +1,11 @@
 package com.example.notconstraintlayout.ui.explore;
 
+import static android.content.ContentValues.TAG;
+
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,10 +26,16 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 
+import org.jetbrains.annotations.NotNull;
+
+import io.ghyeok.stickyswitch.widget.StickySwitch;
+
 public class ExploreFragment extends Fragment implements OnMapReadyCallback {
 
     private FragmentExploreBinding binding;
     private GoogleMap mMap;
+    private View mapView;
+    private View listView;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -41,8 +50,29 @@ public class ExploreFragment extends Fragment implements OnMapReadyCallback {
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
+        StickySwitch stickySwitch = root.findViewById(R.id.sticky_switch);
+        mapView = root.findViewById(R.id.map);
+        listView = inflater.inflate(R.layout.explore_listview, container, false);
+        stickySwitch.setOnSelectedChangeListener(new StickySwitch.OnSelectedChangeListener() {
+            @Override
+            public void onSelectedChange(@NotNull StickySwitch.Direction direction, @NotNull String text) {
+                Log.d(TAG, "Now Selected : " + direction.name() + ", Current Text : " + text);
+                if (direction == StickySwitch.Direction.LEFT) {
+                    // Show list view and hide map view
+                    listView.setVisibility(View.VISIBLE);
+                    mapView.setVisibility(View.GONE);
+                } else {
+                    // Show map view and hide list view
+                    mapView.setVisibility(View.VISIBLE);
+                    listView.setVisibility(View.GONE);
+                }
+            }
+        });
+
         return root;
     }
+
+
 
     @Override
     public void onDestroyView() {

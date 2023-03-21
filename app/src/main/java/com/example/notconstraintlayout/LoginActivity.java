@@ -45,6 +45,12 @@ public class LoginActivity extends AppCompatActivity {
         SharedPreferences sharedPreferences = getSharedPreferences("MySharedPref",MODE_PRIVATE);
         SharedPreferences.Editor myEdit = sharedPreferences.edit();
 
+        String username = sharedPreferences.getString("name", null);
+        if (username != null) {
+            startActivity(new Intent(LoginActivity.this, MainActivity.class));
+//            finish();
+        }
+
         userProfileList = new ArrayList<>();
         UserProfileAdapter = new CustomList(this, userProfileList);
         userProfile = new UserProfile(this);
@@ -57,8 +63,9 @@ public class LoginActivity extends AppCompatActivity {
                 final String username = usernameEditText.getText().toString();
                 final int userContact = Integer.parseInt(userContactEditText.getText().toString());
 
+
                 HashMap<String, Integer> data = new HashMap<>();
-                if (username.length()>0 && String.valueOf(userContact).length()>0) {
+                if (username.length() > 0 && String.valueOf(userContact).length() > 0) {
                     data.put("Contact Info", userContact);
                     collectionReference
                             .document(username)
@@ -70,7 +77,7 @@ public class LoginActivity extends AppCompatActivity {
                                     Log.d(TAG, "Data has been added successfully!");
                                     myEdit.putString("name", username);
                                     myEdit.putInt("number", userContact);
-                                    myEdit.commit();
+                                    myEdit.apply(); // apply changes to the SharedPreferences
                                 }
                             })
                             .addOnFailureListener(new OnFailureListener() {
@@ -86,22 +93,6 @@ public class LoginActivity extends AppCompatActivity {
                 startActivity(new Intent(LoginActivity.this, MainActivity.class));
             }
         });
-
-//        collectionReference.addSnapshotListener(new EventListener<QuerySnapshot>() {
-//            @Override
-//            public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable
-//                    FirebaseFirestoreException error) {
-//                userProfileList.clear();
-//                for(QueryDocumentSnapshot doc: queryDocumentSnapshots)
-//                {
-//                    Log.d(TAG, String.valueOf(doc.getData().get("Username")));
-//                    String username = doc.getId();
-//                    int contactInfo = (int) doc.getData().get("Contact Info");
-//                    userProfileList.add(new UserProfile(contactInfo, username)); // Adding the username and number from FireStore
-//                }
-//                UserProfileAdapter.notifyDataSetChanged(); // Notifying the adapter to render any new data fetched from the cloud
-//            }
-//        });
 
     }
 }

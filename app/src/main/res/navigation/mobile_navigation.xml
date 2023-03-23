@@ -21,7 +21,7 @@
 
     <fragment
         android:id="@+id/navigation_leaderboard"
-        android:name="com.example.notconstraintlayout.ui.leaderboard.LeaderboardFragment"
+        android:name="com.example.notconstraintlayout.ui.leaderboard.LeaderBoardFragment"
         android:label="Leaderboard"
         tools:layout="@layout/fragment_leaderboard" />
 </navigation>

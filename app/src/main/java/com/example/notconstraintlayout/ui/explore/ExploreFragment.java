@@ -33,6 +33,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -135,7 +136,17 @@ public class ExploreFragment extends Fragment implements OnMapReadyCallback, Loc
         return root;
     }
 
-
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (mMap == null) {
+            SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager()
+                    .findFragmentById(R.id.map);
+            if (mapFragment != null) {
+                mapFragment.getMapAsync(this);
+            }
+        }
+    }
 
     @Override
     public void onDestroyView() {
@@ -163,6 +174,17 @@ public class ExploreFragment extends Fragment implements OnMapReadyCallback, Loc
                             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15f));
                         }
                     });
+
+            // Loop through qrList and add markers
+            for (QrClass qr : qrArray) {
+                LatLng qrLatLng = qr.getLocation();
+                MarkerOptions markerOptions = new MarkerOptions()
+                        .position(qrLatLng)
+                        .title(qr.getName())
+                        .snippet("Points: " + qr.getPoints());
+                mMap.addMarker(markerOptions);
+            }
+
         } else {
             // Request location permission if not granted
             ActivityCompat.requestPermissions(requireActivity(),

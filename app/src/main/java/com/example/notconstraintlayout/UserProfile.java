@@ -3,6 +3,7 @@ package com.example.notconstraintlayout;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import com.example.notconstraintlayout.QrClass;
 import com.google.gson.Gson;
 
 import java.util.ArrayList;
@@ -17,6 +18,11 @@ public class UserProfile {
 
     public UserProfile(Context context) {
         this.context = context;
+    }
+
+    public UserProfile(String username, int totalScore) {
+        this.username = username;
+        this.totalScore = totalScore;
     }
 
     public void setContactInfo(int contactInfo) {
@@ -42,6 +48,14 @@ public class UserProfile {
     public void setScannedQrCodes(ArrayList<QrClass> scannedQrCodes) {
         this.scannedQrCodes = scannedQrCodes;
         saveUserDetails();
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public int getTotalScore() {
+        return totalScore;
     }
 
     private void saveUserDetails() {

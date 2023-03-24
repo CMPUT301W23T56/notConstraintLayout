@@ -3,20 +3,30 @@ package com.example.notconstraintlayout.ui.leaderboard;
 import static com.example.notconstraintlayout.R.layout.fragment_leaderboard;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.SearchView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.notconstraintlayout.R;
+import com.example.notconstraintlayout.UserProfile;
 import com.example.notconstraintlayout.databinding.FragmentLeaderboardBinding;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 
@@ -27,11 +37,18 @@ public class LeaderBoardFragment extends Fragment {
     ArrayList<PlayerListClass> arrayList = new ArrayList<>();
     ArrayList<PlayerListClass> searchList;
 
-    String[] playerList = new String[]{"Ada Loveace", "Prateek", "Anna", "Ruoyun", "Adi",
-            "Vinu","Dhairya", "Temba","kartik","Shreya","Smag","Hannah","Josh","Cindy"};
+    ArrayList<UserProfile> playerList;
+    ArrayAdapter<UserProfile> playerAdapter;
 
-    String[] playerPoint = new String[]{"12400","12200","12100","11900","11500","11455","11412",
-            "10000","9900","9869","900","0","8000","10"};
+    final String TAG = "Sample";
+
+
+
+//    String[] playerList = new String[]{"Ada Loveace", "Prateek", "Anna", "Ruoyun", "Adi",
+//            "Vinu","Dhairya", "Temba","kartik","Shreya","Smag","Hannah","Josh","Cindy"};
+//
+//    String[] playerPoint = new String[]{"12400","12200","12100","11900","11500","11455","11412",
+//            "10000","9900","9869","900","0","8000","10"};
 
     private FragmentLeaderboardBinding binding;
 
@@ -48,6 +65,23 @@ public class LeaderBoardFragment extends Fragment {
 
         super.onCreate(savedInstanceState);
 
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        final CollectionReference collectionReference = db.collection("Profiles");
+
+        collectionReference.addSnapshotListener(new EventListener<QuerySnapshot>() {
+            @Override
+            public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
+                playerList.clear();
+                for(QueryDocumentSnapshot doc: value)
+                {
+                    Log.d(TAG, String.valueOf(doc.getData().get("username")));
+                    String name = doc.getId();
+                    int score = (int) doc.getData().get("Total Score");
+                    playerList.add(new UserProfile(name, score));
+                }
+                playerAdapter.notifyDataSetChanged();
+            }
+        });
 
         View view = inflater.inflate(fragment_leaderboard,container,false);
         searchView = view.findViewById(R.id.leader_board_search);
@@ -55,22 +89,14 @@ public class LeaderBoardFragment extends Fragment {
         searchView.setIconified(false);
         searchView.clearFocus();
 
-        for (int i = 0; i < playerList.length; i++){
+        for (int i = 0; i < playerList.size(); i++){
             PlayerListClass playerListClass = new PlayerListClass();
-            playerListClass.setPlayerName(playerList[i]);
-            playerListClass.setPlayerPoint(playerPoint[i]);
+            playerListClass.setPlayerName(playerList.get(i).getUsername());
+            playerListClass.setPlayerPoint(Integer.toString(playerList.get(i).getTotalScore()));
             arrayList.add(playerListClass);
-
         }
-        //RecyclerView recyclerView = (RecyclerView)
 
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
-
-
-//        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(LeaderboardFragment.this);
-
-
-//        recyclerView.setLayoutManager(layoutManager);
 
         PlayerAdapter playerAdapter = new PlayerAdapter(LeaderBoardFragment.this, arrayList);
         recyclerView.setAdapter(playerAdapter);

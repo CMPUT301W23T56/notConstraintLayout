@@ -2,6 +2,7 @@ package com.example.notconstraintlayout;
 
 import android.graphics.Bitmap;
 
+import com.example.notconstraintlayout.ui.dashboard.ScanResultFragment;
 import com.google.type.LatLng;
 
 import java.nio.charset.StandardCharsets;
@@ -11,7 +12,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class QrClass {
+public class QrClass extends ScanResultFragment {
     private String hash;
     private LatLng location;
     private String name = calculateName(hash);
@@ -44,15 +45,17 @@ public class QrClass {
         return name;
     }
 
-    public int getPoints() {
-        return points;
-    }
+
 
     public String getFace() {
         return face;
     }
 
-    static int computeScore(String Value) {
+    public int getPoints() {
+        return points;
+    }
+
+    public int computeScore(String Value) {
         // Calculate SHA-256 hash of the QR Value contents
         String sha256 = "";   // This variable will be used to store the SHA-256 hash value
         try {
@@ -94,7 +97,7 @@ public class QrClass {
         return hex.toString();
     }
 
-    static String calculateName(String code) {
+    public String calculateName(String code) {
         String[] bit0 = {"cool", "hot"};
         String[] bit1 = {"Fro", "Glo"};
         String[] bit2 = {"Mo", "Lo"};
@@ -117,7 +120,8 @@ public class QrClass {
             String[] bits = {bit0[bit], bit1[bit], bit2[bit], bit3[bit], bit4[bit], bit5[bit]};
             hashNameBuilder.append(bits[i]);
         }
-        return hashNameBuilder.toString();
+        String name =  hashNameBuilder.toString();
+        return name;
     }
 
 }

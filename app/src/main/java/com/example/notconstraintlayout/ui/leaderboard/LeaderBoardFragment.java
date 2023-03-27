@@ -24,6 +24,7 @@ import com.example.notconstraintlayout.R;
 import java.util.ArrayList;
 
 import com.example.notconstraintlayout.databinding.FragmentLeaderboardBinding;
+
 public class LeaderBoardFragment extends Fragment {
 
     SearchView searchView;

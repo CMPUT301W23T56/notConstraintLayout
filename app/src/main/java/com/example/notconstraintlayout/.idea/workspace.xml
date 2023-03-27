@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="NONE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="a5cbbb7f-e19a-4c5e-bdc0-48127603c47c" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/../../../../../debug/ic_launcher-playstore.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../../../../debug/res/mipmap-anydpi-v26/ic_launcher.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../../../../debug/res/mipmap-anydpi-v26/ic_launcher_round.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../../../../debug/res/mipmap-hdpi/ic_launcher.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../../../../debug/res/mipmap-hdpi/ic_launcher_foreground.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../../../../debug/res/mipmap-hdpi/ic_launcher_round.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../../../../debug/res/mipmap-mdpi/ic_launcher.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../../../../debug/res/mipmap-mdpi/ic_launcher_foreground.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../../../../debug/res/mipmap-mdpi/ic_launcher_round.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../../../../debug/res/mipmap-xhdpi/ic_launcher.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../../../../debug/res/mipmap-xhdpi/ic_launcher_foreground.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../../../../debug/res/mipmap-xhdpi/ic_launcher_round.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../../../../debug/res/mipmap-xxhdpi/ic_launcher.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../../../../debug/res/mipmap-xxhdpi/ic_launcher_foreground.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../../../../debug/res/mipmap-xxhdpi/ic_launcher_round.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../../../../debug/res/mipmap-xxxhdpi/ic_launcher.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../../../../debug/res/mipmap-xxxhdpi/ic_launcher_foreground.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../../../../debug/res/mipmap-xxxhdpi/ic_launcher_round.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../../../../debug/res/values/ic_launcher_background.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/scanner.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ui/dashboard/EditFragment.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ui/explore/ExploreList.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../../../res/drawable/ic_add_qr.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../../../res/drawable/rounded_corner.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../../../res/drawable/rounded_corner_add_button.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../../../res/drawable/rounded_corner_button.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../../../res/drawable/rounded_corner_edit_text.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../../../res/layout/fragment_edit_dashboard_fragment.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../../../res/layout/fragment_list_explore.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../../../../test/java/com/example/notconstraintlayout/computeScoreTest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../../../../../../notConstraintLayout" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../../../../build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/../../../../../../build.gradle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../../AndroidManifest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../../../../AndroidManifest.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/LoginActivity.java" beforeDir="false" afterPath="$PROJECT_DIR$/LoginActivity.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/QrClass.java" beforeDir="false" afterPath="$PROJECT_DIR$/QrClass.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ScanResultFragment.java" beforeDir="false" afterPath="$PROJECT_DIR$/ui/dashboard/ScanResultFragment.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ScannerActivity.java" beforeDir="false" afterPath="$PROJECT_DIR$/ui/dashboard/ScannerActivity.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/UserProfile.java" beforeDir="false" afterPath="$PROJECT_DIR$/UserProfile.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/dashboard/DashboardFragment.java" beforeDir="false" afterPath="$PROJECT_DIR$/ui/dashboard/DashboardFragment.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/dashboard/DashboardViewModel.java" beforeDir="false" afterPath="$PROJECT_DIR$/ui/dashboard/DashboardViewModel.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/leaderboard/LeaderBoardFragment.java" beforeDir="false" afterPath="$PROJECT_DIR$/ui/leaderboard/LeaderBoardFragment.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../../res/drawable/baseline_qr_code_scanner_24.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../../../../res/drawable/baseline_qr_code_scanner_24.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../../res/layout/activity_main.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../../../../res/layout/activity_main.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../../res/layout/fragment_dashboard.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../../../../res/layout/fragment_dashboard.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../../res/values/colors.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../../../../res/values/colors.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../../res/values/dimens.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../../../../res/values/dimens.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../../res/values/strings.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../../../../res/values/strings.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../../res/values/themes.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../../../../res/values/themes.xml" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/../../../../../../.." />
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
+  <component name="ProjectId" id="2NOaI0wAffi1jW95u8jtEdmf43a" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.cidr.known.project.marker": "true",
+    "cidr.known.project.marker": "true",
+    "last_opened_file_path": "/Users/harsh/Desktop/UOA Course Materials/Winter 2023/project3clone/notConstraintLayout/app/src/main/java/com/example/notconstraintlayout"
+  }
+}]]></component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="a5cbbb7f-e19a-4c5e-bdc0-48127603c47c" name="Changes" comment="" />
+      <created>1679537498667</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1679537498667</updated>
+    </task>
+    <servers />
+  </component>
+</project>

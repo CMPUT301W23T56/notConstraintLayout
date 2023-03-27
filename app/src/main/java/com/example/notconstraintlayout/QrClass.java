@@ -2,9 +2,6 @@ package com.example.notconstraintlayout;
 
 import android.graphics.Bitmap;
 
-import com.example.notconstraintlayout.ui.dashboard.ScanResultFragment;
-import com.google.type.LatLng;
-
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.ArrayList;
@@ -12,11 +9,11 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class QrClass extends ScanResultFragment {
+public class QrClass {
     private String hash;
-    private LatLng location;
-    private String name = calculateName(hash);
-    private int points = computeScore(hash);
+    private com.google.android.gms.maps.model.LatLng location;
+    private String name;
+    private int points;
     private String face;
     private Bitmap location_image;
 
@@ -25,11 +22,19 @@ public class QrClass extends ScanResultFragment {
         this.hash = hash;
     }
 
-    public LatLng getLocation() {
+    public QrClass(String name, com.google.android.gms.maps.model.LatLng location, int points) {
+        this.name = name;
+        this.location = location;
+        this.points = points;
+
+    }
+
+
+    public com.google.android.gms.maps.model.LatLng getLocation() {
         return location;
     }
 
-    public void setLocation(LatLng location) {
+    public void setLocation(com.google.android.gms.maps.model.LatLng location) {
         this.location = location;
     }
 
@@ -45,14 +50,12 @@ public class QrClass extends ScanResultFragment {
         return name;
     }
 
-
+    public int getPoints() {
+        return points;
+    }
 
     public String getFace() {
         return face;
-    }
-
-    public int getPoints() {
-        return points;
     }
 
     public int computeScore(String Value) {
@@ -120,8 +123,7 @@ public class QrClass extends ScanResultFragment {
             String[] bits = {bit0[bit], bit1[bit], bit2[bit], bit3[bit], bit4[bit], bit5[bit]};
             hashNameBuilder.append(bits[i]);
         }
-        String name =  hashNameBuilder.toString();
-        return name;
+        return hashNameBuilder.toString();
     }
 
 }

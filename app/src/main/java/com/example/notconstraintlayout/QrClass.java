@@ -22,6 +22,11 @@ public class QrClass {
 
     }
 
+    public QrClass(String name, int points) {
+        this.name = name;
+        this.points = points;
+    }
+
 
     public com.google.android.gms.maps.model.LatLng getLocation() {
         return location;

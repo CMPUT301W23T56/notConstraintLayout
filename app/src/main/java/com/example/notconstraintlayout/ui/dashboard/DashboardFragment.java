@@ -1,11 +1,11 @@
 package com.example.notconstraintlayout.ui.dashboard;
 
 import static android.app.Activity.RESULT_OK;
+import static android.content.ContentValues.TAG;
 
 import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.os.Bundle;
@@ -26,11 +26,13 @@ import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.ViewModelProvider;
 
 import com.example.notconstraintlayout.CaptureAct;
+import com.example.notconstraintlayout.QrClass;
 import com.example.notconstraintlayout.R;
+import com.example.notconstraintlayout.UserProfile;
 import com.example.notconstraintlayout.databinding.FragmentDashboardBinding;
+import com.example.notconstraintlayout.userDBManager;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.journeyapps.barcodescanner.ScanContract;
@@ -47,6 +49,50 @@ import java.util.regex.Pattern;
 
 public class DashboardFragment extends Fragment {
 
+    private FragmentDashboardBinding binding;
+    ListView listView;
+    ArrayAdapter<String> arrayAdapter;
+    Button Edit;
+    private static final int REQUEST_CODE_QR_SCAN = 0;
+    private static final int REQUEST_IMAGE_CAPTURE = 1;
+
+    FloatingActionButton scan_button;
+
+    private List<String> scannedCodes;
+
+    ActivityResultLauncher<ScanOptions> barCodeLauncher;
+
+    public View onCreateView(@NonNull LayoutInflater inflater,
+                             ViewGroup container, Bundle savedInstanceState) {
+        binding = FragmentDashboardBinding.inflate(inflater, container, false);
+        View root = binding.getRoot();
+        final TextView textView = binding.username;
+        final TextView scoreTextView = binding.Scorevalue;
+        final TextView scannedTextView = binding.Scannedvalue;
+
+        userDBManager userDBManager = new userDBManager(requireContext());
+        userDBManager.getUserProfile(new userDBManager.OnUserProfileLoadedListener() {
+            @Override
+            public void onUserProfileLoaded(UserProfile userProfile) {
+                if (userProfile != null) {
+                    String username = userProfile.getUsername();
+                    textView.setText(username);
+                    scoreTextView.setText(String.valueOf(userProfile.getTotalScore()));
+                    scannedTextView.setText(String.valueOf(userProfile.getTotalScanned()));
+                } else {
+                    Log.d(TAG, "Failed to load user profile.");
+                }
+            }
+        });
+
+        binding.myFab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                scanQrCode();
+            }
+        });
+        return root;
+    }
 
     private static final int PERMISSION_REQUEST_CAMERA = 2;
 
@@ -73,22 +119,11 @@ public class DashboardFragment extends Fragment {
 //        }
 //    }
 
-    private FragmentDashboardBinding binding;
-    ListView listView;
-    ArrayAdapter<String> arrayAdapter;
-    Button Edit;
-    private static final int REQUEST_CODE_QR_SCAN = 0;
-    private static final int REQUEST_IMAGE_CAPTURE = 1;
-
-    FloatingActionButton scan_button;
-
-    private List<String> scannedCodes;
-
-    ActivityResultLauncher<ScanOptions> barCodeLauncher;
-
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
+
+        userDBManager userManager = new userDBManager(requireContext());
 
         ScanOptions options = new ScanOptions();
         options.setPrompt("Please Scan the code");
@@ -101,6 +136,8 @@ public class DashboardFragment extends Fragment {
             if (result.getContents() != null) {
                 String name = calculateName(result.getContents());
                 int score = computeScore(result.getContents());
+                QrClass qrClass = new QrClass(name, score);
+//                userManager.addQrCode(qrClass);
                 LayoutInflater inflater = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
                 View customView = inflater.inflate(R.layout.custom_alert_dialog, null);
 
@@ -136,28 +173,6 @@ public class DashboardFragment extends Fragment {
 //            }
 //        });
 
-    public View onCreateView(@NonNull LayoutInflater inflater,
-                             ViewGroup container, Bundle savedInstanceState) {
-        DashboardViewModel dashboardViewModel =
-                new ViewModelProvider(requireActivity()).get(DashboardViewModel.class);
-        View view = inflater.inflate(R.layout.fragment_dashboard, container, false);
-        scan_button = view.findViewById(R.id.my_fab);
-        binding = FragmentDashboardBinding.inflate(inflater, container, false);
-        View root = binding.getRoot();
-        final TextView textView = binding.username;
-        SharedPreferences sharedPreferences = requireActivity().getSharedPreferences("MySharedPref", Context.MODE_PRIVATE);
-        String username = sharedPreferences.getString("name", "defaultUsername");
-        textView.setText(username);
-
-
-        binding.myFab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                scanQrCode();
-            }
-        });
-        return root;
-    }
 
     @Override
     public void onDestroyView() {
@@ -174,11 +189,6 @@ public class DashboardFragment extends Fragment {
         // Launch the barcode scanner activity and handle the result using the activity result launcher
         barCodeLauncher.launch(options);
     }
-
-    // Rest of the code
-
-
-
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
@@ -205,26 +215,6 @@ public class DashboardFragment extends Fragment {
             }
         }
     }
-
-
-//    @Override
-//    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-//        super.onActivityResult(requestCode, resultCode, data);
-//
-//        // Check if the request code matches the code used to start the scanner
-//        if (requestCode == IntentIntegrator.REQUEST_CODE) {
-//            IntentResult result = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
-//            if (result != null) {
-//                if (result.getContents() != null) {
-//                    // Handle the scanned result
-//                    Toast.makeText(getActivity(), result.getContents(), Toast.LENGTH_SHORT).show();
-//                } else {
-//                    Toast.makeText(getActivity(), "Scanning cancelled", Toast.LENGTH_SHORT).show();
-//                }
-//            }
-//        }
-//    }
-
 
     private int computeScore(String Value) {
         // Calculate SHA-256 hash of the QR Value contents

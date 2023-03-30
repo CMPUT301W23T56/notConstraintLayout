@@ -48,7 +48,7 @@ public class LoginActivity extends AppCompatActivity {
         userContactEditText = findViewById(R.id.User_phone);
         userProfile = new UserProfile(this);
 
-        SharedPreferences sharedPreferences = getSharedPreferences("MySharedPref", MODE_PRIVATE);
+        SharedPreferences sharedPreferences = getSharedPreferences("localdata", MODE_PRIVATE);
         String uid = sharedPreferences.getString("uid", "");
 
         if (!TextUtils.isEmpty(uid)) {
@@ -113,9 +113,10 @@ public class LoginActivity extends AppCompatActivity {
                                                     }
                                                 }
                                             });
-                                    SharedPreferences sharedPreferences = getSharedPreferences("MySharedPref", MODE_PRIVATE);
+                                    SharedPreferences sharedPreferences = getSharedPreferences("localdata", MODE_PRIVATE);
                                     SharedPreferences.Editor editor = sharedPreferences.edit();
                                     editor.putString("uid", mAuth.getCurrentUser().getUid());
+                                    editor.putString("username", username);
                                     editor.apply();
                                     Toast.makeText(LoginActivity.this, "Registration successful!", Toast.LENGTH_SHORT).show();
                                     startActivity(new Intent(LoginActivity.this, MainActivity.class));

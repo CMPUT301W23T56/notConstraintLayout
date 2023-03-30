@@ -14,7 +14,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -29,6 +28,7 @@ import androidx.fragment.app.Fragment;
 
 import com.example.notconstraintlayout.CaptureAct;
 import com.example.notconstraintlayout.QrClass;
+import com.example.notconstraintlayout.QrCodeAdapter;
 import com.example.notconstraintlayout.R;
 import com.example.notconstraintlayout.UserProfile;
 import com.example.notconstraintlayout.databinding.FragmentDashboardBinding;
@@ -50,9 +50,9 @@ import java.util.regex.Pattern;
 public class DashboardFragment extends Fragment {
 
     private FragmentDashboardBinding binding;
-    ListView listView;
-    ArrayAdapter<String> arrayAdapter;
-    Button Edit;
+    private ListView mListView;
+    private QrCodeAdapter mAdapter;
+    private ArrayList<QrClass> mQrCodes = new ArrayList<>();
     private static final int REQUEST_CODE_QR_SCAN = 0;
     private static final int REQUEST_IMAGE_CAPTURE = 1;
 
@@ -70,6 +70,10 @@ public class DashboardFragment extends Fragment {
         final TextView scoreTextView = binding.Scorevalue;
         final TextView scannedTextView = binding.Scannedvalue;
 
+        mListView = binding.dashboardlist;
+        mAdapter = new QrCodeAdapter(requireContext(), mQrCodes);
+        mListView.setAdapter(mAdapter);
+
         userDBManager userDBManager = new userDBManager(requireContext());
         userDBManager.getUserProfile(new userDBManager.OnUserProfileLoadedListener() {
             @Override
@@ -79,6 +83,9 @@ public class DashboardFragment extends Fragment {
                     textView.setText(username);
                     scoreTextView.setText(String.valueOf(userProfile.getTotalScore()));
                     scannedTextView.setText(String.valueOf(userProfile.getTotalScanned()));
+                    mQrCodes.clear();
+                    mQrCodes.addAll(userProfile.getScannedQrCodes());
+                    mAdapter.notifyDataSetChanged();
                 } else {
                     Log.d(TAG, "Failed to load user profile.");
                 }
@@ -108,17 +115,6 @@ public class DashboardFragment extends Fragment {
         }
     }
 
-//    public void openCameraToTakePicture() {
-//        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-//            ActivityCompat.requestPermissions(requireActivity(), new String[]{Manifest.permission.CAMERA}, PERMISSION_REQUEST_CAMERA);
-//        } else {
-//            Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-//            if (takePictureIntent.resolveActivity(requireActivity().getPackageManager()) != null) {
-//                startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
-//            }
-//        }
-//    }
-
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
@@ -131,13 +127,23 @@ public class DashboardFragment extends Fragment {
         options.setCaptureActivity(CaptureAct.class); // To capture QR code through the camera
 
         barCodeLauncher = registerForActivityResult(new ScanContract(), result -> {
-            // Show the result of scanned QR code in the text
-            // Create a TextView instance
             if (result.getContents() != null) {
                 String name = calculateName(result.getContents());
                 int score = computeScore(result.getContents());
                 QrClass qrClass = new QrClass(name, score);
-//                userManager.addQrCode(qrClass);
+                userManager.addQrCode(qrClass, new userDBManager.OnQrCodeAddedListener() {
+                    @Override
+                    public void onQrCodeAdded() {
+                        Log.d(TAG, "QR code added.");
+                    }
+                }, new userDBManager.OnQrCodesChangedListener() {
+                    @Override
+                    public void onQrCodesChanged(List<QrClass> qrCodes) {
+                        mQrCodes.clear();
+                        mQrCodes.addAll(qrCodes);
+                        mAdapter.notifyDataSetChanged();
+                    }
+                });
                 LayoutInflater inflater = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
                 View customView = inflater.inflate(R.layout.custom_alert_dialog, null);
 

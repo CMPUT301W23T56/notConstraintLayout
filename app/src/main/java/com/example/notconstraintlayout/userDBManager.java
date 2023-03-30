@@ -3,6 +3,7 @@ package com.example.notconstraintlayout;
 import static android.content.ContentValues.TAG;
 
 import android.content.Context;
+import android.content.Intent;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -12,11 +13,13 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.HashMap;
+import java.util.List;
 
 public class userDBManager {
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -27,7 +30,14 @@ public class userDBManager {
     public userDBManager(Context context) {
         this.context = context;
         FirebaseAuth mAuth = FirebaseAuth.getInstance();
-        userId = mAuth.getCurrentUser().getUid();
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        if (currentUser == null) {
+            // User is not authenticated, go to LoginActivity
+            Intent intent = new Intent(context, LoginActivity.class);
+            context.startActivity(intent);
+            return;
+        }
+        userId = currentUser.getUid();
         userDocRef = db.collection("Profiles").document(userId);
     }
 
@@ -75,9 +85,45 @@ public class userDBManager {
         });
     }
 
+    public void updateProfile(UserProfile userProfile, OnQrCodeAddedListener listener) {
+        DocumentReference userDocRef = db.collection("users").document(userId);
+        userDocRef.set(userProfile).addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                Log.d(TAG, "User profile updated.");
+                listener.onQrCodeAdded();
+            } else {
+                Log.d(TAG, "User profile update failed.");
+            }
+        });
+    }
+
+    public void addQrCode(QrClass qrCode, OnQrCodeAddedListener listener, OnQrCodesChangedListener qrCodesChangedListener) {
+        getUserProfile(new OnUserProfileLoadedListener() {
+            @Override
+            public void onUserProfileLoaded(UserProfile userProfile) {
+                if (userProfile != null) {
+                    userProfile.addQrCode(qrCode);
+                    saveUserProfile(userProfile);
+                    listener.onQrCodeAdded();
+                    qrCodesChangedListener.onQrCodesChanged(userProfile.getScannedQrCodes());
+                } else {
+                    Log.d(TAG, "Failed to load user profile.");
+                }
+            }
+        });
+    }
 
 
     public interface OnUserProfileLoadedListener {
         void onUserProfileLoaded(UserProfile userProfile);
     }
+
+    public interface OnQrCodeAddedListener {
+        void onQrCodeAdded();
+    }
+
+    public interface OnQrCodesChangedListener {
+        void onQrCodesChanged(List<QrClass> qrCodes);
+    }
+
 }

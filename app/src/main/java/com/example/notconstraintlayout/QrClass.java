@@ -19,8 +19,11 @@ public class QrClass {
         this.name = name;
         this.location = location;
         this.points = points;
-
     }
+    public QrClass() {
+        // Required empty constructor for Firestore deserialization
+    }
+
 
     public QrClass(String name, int points) {
         this.name = name;
@@ -55,5 +58,6 @@ public class QrClass {
     public String getFace() {
         return face;
     }
+
 
 }

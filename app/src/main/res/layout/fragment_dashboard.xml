@@ -18,14 +18,14 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal">
 
-
         <TextView
 
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="0dp"
+            android:layout_marginLeft="20dp"
             android:text="Hello,"
             android:textColor="@color/black"
+            android:layout_marginTop="30dp"
             android:textSize="40dp"
             android:textStyle="bold" />
 
@@ -41,33 +41,62 @@
 
         <Button
             android:id="@+id/edit"
-            android:layout_width="95dp"
+            android:layout_width="80dp"
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
             android:layout_gravity="bottom"
+            android:layout_centerInParent="true"
             android:layout_marginEnd="54dp"
             android:background="@drawable/rounded_corner_button"
             android:text="Edit"
             android:textAlignment="center"
             android:textColor="@color/white"
             android:textSize="15dp"
+            android:textStyle="bold"
             tools:ignore="RtlCompat" />
 
     </LinearLayout>
 
+    <!--    <LinearLayout-->
+    <!--        android:layout_width="match_parent"-->
+    <!--        android:layout_height="wrap_content"-->
+    <!--        android:orientation="vertical">-->
+
+    <!--        <TextView-->
+    <!--            android:layout_width="match_parent"-->
+    <!--            android:layout_height="wrap_content"/>-->
+
+    <!--    </LinearLayout>-->
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="horizontal">
 
         <TextView
             android:id="@+id/username"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:text="Ada LoveLace"
+            android:layout_marginLeft="20dp"
             android:textColor="@color/black"
             android:textSize="40dp"
             android:textStyle="bold" />
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/my_fab"
+                android:layout_width="match_parent"
+                android:layout_height="400dp"
+                android:layout_alignParentRight="true"
+                android:layout_marginTop="20dp"
+                android:layout_marginRight="33dp"
+                android:src="@drawable/baseline_qr_code_scanner_24"
+                app:backgroundTint="@color/orange"
+                app:fabSize="normal" />
+        </RelativeLayout>
+
 
 
     </LinearLayout>
@@ -75,18 +104,32 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="horizontal">
 
-        <TextView
+        <!--        <TextView-->
 
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:text=""
-            android:textColor="@color/black"
-            android:textSize="15dp" />
+        <!--            android:layout_width="match_parent"-->
+        <!--            android:layout_height="match_parent"-->
+        <!--            android:text=""-->
+        <!--            android:textColor="@color/black"-->
+        <!--            android:textSize="15dp" />-->
 
 
     </LinearLayout>
+
+    <!--    <RelativeLayout-->
+    <!--        android:layout_width="match_parent"-->
+    <!--        android:layout_height="wrap_content"-->
+    <!--        android:orientation="horizontal">-->
+    <!--        <com.google.android.material.floatingactionbutton.FloatingActionButton-->
+    <!--            android:id="@+id/my_fab"-->
+    <!--            android:layout_width="wrap_content"-->
+    <!--            android:layout_height="wrap_content"-->
+    <!--            android:src="@drawable/baseline_qr_code_scanner_24"-->
+    <!--            app:backgroundTint="@color/orange"-->
+    <!--            android:layout_alignParentRight="true"-->
+    <!--            app:fabSize="normal" />-->
+    <!--    </RelativeLayout>-->
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -98,7 +141,7 @@
             android:id="@+id/Score"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="0dp"
+            android:layout_marginLeft="20dp"
             android:text="Score:"
             android:textColor="@color/black"
             android:textSize="20dp" />
@@ -116,21 +159,14 @@
             android:id="@+id/Scanned"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="0dp"
+            android:layout_marginLeft="20dp"
             android:text="Total scanned:         "
             android:textColor="@color/black"
             android:textSize="20dp" />
 
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/my_fab"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/baseline_qr_code_scanner_24"
-            app:backgroundTint="@color/orange"
-            app:fabSize="normal" />
-
-
     </LinearLayout>
+
+
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -139,31 +175,45 @@
 
 
         <TextView
-            android:id="@+id/Score_value"
-            android:layout_width="wrap_content"
+            android:id="@+id/Scorevalue"
+            android:layout_width="120dp"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="0dp"
-            android:text="2400"
+            android:layout_marginLeft="14dp"
             android:textColor="@color/black"
-            android:textSize="20dp" />
+            android:textSize="30dp" />
 
         <TextView
 
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="0dp"
-            android:text="                  "
+            android:text="          "
             android:textColor="@color/black"
             android:textSize="20dp" />
 
         <TextView
-            android:id="@+id/Scanned_value"
+            android:id="@+id/Scannedvalue"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="0dp"
-            android:text="10"
             android:textColor="@color/black"
-            android:textSize="20dp" />
+            android:textSize="30dp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <TextView
+
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text=""
+            android:textColor="@color/black"
+            android:textSize="15dp" />
+
+
     </LinearLayout>
 
     <LinearLayout
@@ -196,13 +246,13 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="0dp"
-            android:text="Your QR:"
+            android:text="   Your QR codes"
+            android:textStyle="bold"
             android:textColor="@color/black"
             android:textSize="20dp" />
 
         <TextView
-
-            android:layout_width="wrap_content"
+            android:layout_width="150dp"
             android:layout_height="wrap_content"
             android:layout_marginLeft="0dp"
             android:text="                                              "
@@ -213,10 +263,20 @@
             android:id="@+id/sort"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="0dp"
+            android:layout_marginRight="0dp"
             android:text="Sort"
+            android:textStyle="bold"
             android:textColor="@color/black"
             android:textSize="20dp" />
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/baseline_sorting_24"/>
+
+
+
+
     </LinearLayout>
 
     <LinearLayout
@@ -226,7 +286,7 @@
         android:orientation="vertical">
 
         <ListView
-            android:id="@+id/myListView"
+            android:id="@+id/dashboardlist"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:text="No items found"
@@ -244,4 +304,3 @@
 
 
 </LinearLayout>
-

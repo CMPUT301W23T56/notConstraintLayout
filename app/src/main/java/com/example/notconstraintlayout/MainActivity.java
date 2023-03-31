@@ -1,5 +1,8 @@
 package com.example.notconstraintlayout;
 
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -10,10 +13,8 @@ import androidx.navigation.ui.NavigationUI;
 
 import com.example.notconstraintlayout.databinding.ActivityMainBinding;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.google.firebase.firestore.FirebaseFirestore;
 
 public class MainActivity extends AppCompatActivity {
-    FirebaseFirestore db = FirebaseFirestore.getInstance();
 
     private ActivityMainBinding binding;
 
@@ -24,15 +25,24 @@ public class MainActivity extends AppCompatActivity {
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        BottomNavigationView navView = findViewById(R.id.nav_view);
-        // Passing each menu ID as a set of Ids because each
-        // menu should be considered as top level destinations.
-        AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(
-                R.id.navigation_dashboard, R.id.navigation_explore, R.id.navigation_leaderboard)
-                .build();
-        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_activity_main);
-        NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
-        NavigationUI.setupWithNavController(binding.navView, navController);
-    }
+        // Check if there is a UID stored in SharedPreferences
+        SharedPreferences sharedPreferences = getSharedPreferences("localdata", Context.MODE_PRIVATE);
+        String uid = sharedPreferences.getString("uid", null);
 
+        if (uid == null) {
+            // No UID found, start LoginActivity
+            Intent intent = new Intent(this, LoginActivity.class);
+            startActivity(intent);
+            finish(); // Close MainActivity to prevent user from going back to it
+        } else {
+            // UID found, continue with MainActivity flow
+            BottomNavigationView navView = findViewById(R.id.nav_view);
+            AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(
+                    R.id.navigation_dashboard, R.id.navigation_explore, R.id.navigation_leaderboard)
+                    .build();
+            NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_activity_main);
+            NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
+            NavigationUI.setupWithNavController(binding.navView, navController);
+        }
+    }
 }

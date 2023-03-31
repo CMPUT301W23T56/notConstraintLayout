@@ -150,16 +150,5 @@ public class LeaderBoardFragment extends Fragment {
 
         return view;
     }
-
-
-
-
-
-
-
-
-
-
-
 }
 

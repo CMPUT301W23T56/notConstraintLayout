@@ -65,28 +65,33 @@ public class userDBManager {
     }
 
     public void getUserProfile(final OnUserProfileLoadedListener listener) {
-        userDocRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                if (task.isSuccessful()) {
-                    DocumentSnapshot document = task.getResult();
-                    if (document.exists()) {
-                        UserProfile userProfile = document.toObject(UserProfile.class);
-                        listener.onUserProfileLoaded(userProfile);
+        if (userDocRef != null) {
+            userDocRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                    if (task.isSuccessful()) {
+                        DocumentSnapshot document = task.getResult();
+                        if (document.exists()) {
+                            UserProfile userProfile = document.toObject(UserProfile.class);
+                            listener.onUserProfileLoaded(userProfile);
+                        } else {
+                            Log.d(TAG, "User profile document not found.");
+                            listener.onUserProfileLoaded(null);
+                        }
                     } else {
-                        Log.d(TAG, "User profile document not found.");
+                        Log.d(TAG, "Failed to retrieve user profile data: ", task.getException());
                         listener.onUserProfileLoaded(null);
                     }
-                } else {
-                    Log.d(TAG, "Failed to retrieve user profile data: ", task.getException());
-                    listener.onUserProfileLoaded(null);
                 }
-            }
-        });
+            });
+        } else {
+            Log.d(TAG, "User document reference is null.");
+            listener.onUserProfileLoaded(null);
+        }
     }
 
     public void updateProfile(UserProfile userProfile, OnQrCodeAddedListener listener) {
-        DocumentReference userDocRef = db.collection("users").document(userId);
+        DocumentReference userDocRef = db.collection("Profiles").document(userId);
         userDocRef.set(userProfile).addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 Log.d(TAG, "User profile updated.");
@@ -103,6 +108,8 @@ public class userDBManager {
             public void onUserProfileLoaded(UserProfile userProfile) {
                 if (userProfile != null) {
                     userProfile.addQrCode(qrCode);
+                    userProfile.setTotalScanned(userProfile.getTotalScanned()+1);
+                    userProfile.setTotalScore(userProfile.getTotalScore()+qrCode.getPoints());
                     saveUserProfile(userProfile);
                     listener.onQrCodeAdded();
                     qrCodesChangedListener.onQrCodesChanged(userProfile.getScannedQrCodes());

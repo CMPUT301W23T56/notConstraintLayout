@@ -4,6 +4,7 @@ import static android.app.Activity.RESULT_OK;
 import static android.content.ContentValues.TAG;
 
 import android.Manifest;
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -15,6 +16,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -64,15 +66,17 @@ public class DashboardFragment extends Fragment implements userDBManager.OnUserD
 
     private TextView scoreTextView;
     private TextView scannedTextView;
+
+    private TextView textView;
     ActivityResultLauncher<ScanOptions> barCodeLauncher;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
         binding = FragmentDashboardBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
-        final TextView textView = binding.username;
-        final TextView scoreTextView = binding.Scorevalue;
-        final TextView scannedTextView = binding.Scannedvalue;
+        textView = binding.username;
+        scoreTextView = binding.Scorevalue;
+        scannedTextView = binding.Scannedvalue;
 
         mListView = binding.dashboardlist;
         mAdapter = new QrCodeAdapter(requireContext(), mQrCodes);
@@ -107,6 +111,13 @@ public class DashboardFragment extends Fragment implements userDBManager.OnUserD
                     }
                 });
                 mAdapter.notifyDataSetChanged();
+            }
+        });
+
+        binding.edit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showEditProfileDialog();
             }
         });
 
@@ -203,6 +214,59 @@ public class DashboardFragment extends Fragment implements userDBManager.OnUserD
     public void onDestroyView() {
         super.onDestroyView();
         binding = null;
+    }
+
+    public void showEditProfileDialog() {
+        LayoutInflater inflater = getLayoutInflater();
+        View dialogView = inflater.inflate(R.layout.edit_profile_dialog, null);
+        userDBManager userManager = new userDBManager(requireContext());
+
+        EditText editUsername = dialogView.findViewById(R.id.edit_username);
+        EditText editPhoneNumber = dialogView.findViewById(R.id.edit_phone_number);
+        Button updateButton = dialogView.findViewById(R.id.button_update);
+
+        // Get the current user's information
+        userManager.getUserProfile(new userDBManager.OnUserProfileLoadedListener() {
+            @Override
+            public void onUserProfileLoaded(UserProfile userProfile) {
+                if (userProfile != null) {
+                    editUsername.setText(userProfile.getUsername());
+                    editPhoneNumber.setText(Long.toString(userProfile.getContactInfo()));
+                } else {
+                    Log.d(TAG, "Failed to load user profile.");
+                }
+            }
+        });
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
+        builder.setView(dialogView)
+                .setTitle("Edit Profile");
+        final AlertDialog dialog = builder.create();
+        updateButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // Get the updated information from the EditText fields
+                String newUsername = editUsername.getText().toString();
+                String newPhoneNumber = editPhoneNumber.getText().toString();
+
+                // Update the user's information in the database
+                userManager.updateProfile(newUsername, newPhoneNumber, new userDBManager.OnUserProfileUpdatedListener() {
+                    @Override
+                    public void onUserProfileUpdated(UserProfile userProfile) {
+                        if (userProfile != null) {
+                            // Update the UI with the new information
+                            textView.setText(userProfile.getUsername());
+                            scoreTextView.setText(String.valueOf(userProfile.getTotalScore()));
+                            scannedTextView.setText(String.valueOf(userProfile.getTotalScanned()));
+                        } else {
+                            Log.d(TAG, "Failed to update user profile.");
+                        }
+                    }
+                });
+                dialog.dismiss();
+            }
+        });
+        dialog.show();
     }
 
     public void scanQrCode() {

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Edit Profile"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:paddingBottom="16dp" />
+
+    <EditText
+        android:id="@+id/edit_username"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/edit_text_background"
+        android:hint="Username"
+        android:inputType="text"
+        android:maxLines="1"
+        android:minHeight="48dp"
+        android:padding="8dp"
+        android:textSize="18sp" />
+
+    <EditText
+        android:id="@+id/edit_phone_number"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/edit_text_background"
+        android:hint="Phone Number"
+        android:inputType="phone"
+        android:maxLines="1"
+        android:minHeight="48dp"
+        android:padding="8dp"
+        android:textSize="18sp" />
+
+    <Button
+        android:id="@+id/button_update"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="Update"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:background="@drawable/rounded_corner_button"
+        android:textColor="@color/white"
+        android:padding="16dp" />
+
+</LinearLayout>

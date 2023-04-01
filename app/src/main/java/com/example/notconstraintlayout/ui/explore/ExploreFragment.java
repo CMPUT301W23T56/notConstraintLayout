@@ -24,8 +24,12 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.notconstraintlayout.QrClass;
+import com.example.notconstraintlayout.QrCodeDBManager;
 import com.example.notconstraintlayout.R;
+import com.example.notconstraintlayout.UserProfile;
 import com.example.notconstraintlayout.databinding.FragmentExploreBinding;
+import com.example.notconstraintlayout.ui.leaderboard.PlayerListClass;
+import com.example.notconstraintlayout.userDBManager;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -69,6 +73,17 @@ public class ExploreFragment extends Fragment implements OnMapReadyCallback, Loc
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+
+//        QrCodeDBManager qrDb = new QrCodeDBManager();
+//        qrDb.getUsers(new QrCodeDBManager.OnUsersLoadedListener() {
+//            @Override
+//            public void onUsersLoaded(List<QrClass> qrClassList) {
+//                for (QrClass qrClass : qrClassList) {
+//                    qrArray.add(qrClass);
+//                }
+//            }
+//        });
+
 
         qrArray.add(new QrClass("cool FroMoMegaSpectralCrab", new LatLng(53.517793, -113.513926), 100));
         qrArray.add(new QrClass("cool FroMoMegaSpectralCrab", new LatLng(53.520796, -113.505105), 200));

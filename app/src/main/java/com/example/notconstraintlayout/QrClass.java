@@ -2,8 +2,6 @@ package com.example.notconstraintlayout;
 
 import android.graphics.Bitmap;
 
-import com.google.type.LatLng;
-
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.ArrayList;
@@ -13,9 +11,9 @@ import java.util.regex.Pattern;
 
 public class QrClass {
     private String hash;
-    private LatLng location;
-    private String name = calculateName(hash);
-    private int points = computeScore(hash);
+    private com.google.android.gms.maps.model.LatLng location;
+    private String name;
+    private int points;
     private String face;
     private Bitmap location_image;
 
@@ -24,11 +22,19 @@ public class QrClass {
         this.hash = hash;
     }
 
-    public LatLng getLocation() {
+    public QrClass(String name, com.google.android.gms.maps.model.LatLng location, int points) {
+        this.name = name;
+        this.location = location;
+        this.points = points;
+
+    }
+
+
+    public com.google.android.gms.maps.model.LatLng getLocation() {
         return location;
     }
 
-    public void setLocation(LatLng location) {
+    public void setLocation(com.google.android.gms.maps.model.LatLng location) {
         this.location = location;
     }
 

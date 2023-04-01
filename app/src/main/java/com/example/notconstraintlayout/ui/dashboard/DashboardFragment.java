@@ -29,6 +29,7 @@ import androidx.fragment.app.Fragment;
 import com.example.notconstraintlayout.CaptureAct;
 import com.example.notconstraintlayout.QrClass;
 import com.example.notconstraintlayout.QrCodeAdapter;
+import com.example.notconstraintlayout.QrCodeDBManager;
 import com.example.notconstraintlayout.R;
 import com.example.notconstraintlayout.UserProfile;
 import com.example.notconstraintlayout.databinding.FragmentDashboardBinding;
@@ -115,6 +116,8 @@ public class DashboardFragment extends Fragment {
         }
     }
 
+    QrCodeDBManager qrDb;
+
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
@@ -131,6 +134,7 @@ public class DashboardFragment extends Fragment {
                 String name = calculateName(result.getContents());
                 int score = computeScore(result.getContents());
                 QrClass qrClass = new QrClass(name, score);
+                qrDb.saveQRCodes(qrClass);
                 userManager.addQrCode(qrClass, new userDBManager.OnQrCodeAddedListener() {
                     @Override
                     public void onQrCodeAdded() {

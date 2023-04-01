@@ -46,8 +46,6 @@ public class ExploreFragment extends Fragment implements OnMapReadyCallback, Loc
 
     private FragmentExploreBinding binding;
     private GoogleMap mMap;
-    private View mapView;
-    private View listView;
     private RecyclerView recyclerView;
 
     private List<QrClass> qrArray = new ArrayList<>();
@@ -64,11 +62,10 @@ public class ExploreFragment extends Fragment implements OnMapReadyCallback, Loc
 
         binding = FragmentExploreBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
+        binding.exploreList.setVisibility(View.VISIBLE);
+        binding.map.setVisibility(View.GONE);
 
         StickySwitch stickySwitch = root.findViewById(R.id.sticky_switch);
-        mapView = inflater.inflate(R.layout.explore_map, container, false);
-        listView = root.findViewById(R.id.explore_list);
-
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
@@ -85,18 +82,12 @@ public class ExploreFragment extends Fragment implements OnMapReadyCallback, Loc
                 Log.d(TAG, "Now Selected : " + direction.name() + ", Current Text : " + text);
                 if (direction == StickySwitch.Direction.LEFT) {
                     // Show list view and hide map view
-                    listView.setVisibility(View.VISIBLE);
-                    mapView.setVisibility(View.GONE);
-
-                    // Remove map view from view hierarchy
-                    ((ViewGroup) mapView.getParent()).removeView(mapView);
+                    binding.exploreList.setVisibility(View.VISIBLE);
+                    binding.map.setVisibility(View.GONE);
                 } else {
                     // Show map view and hide list view
-                    mapView.setVisibility(View.VISIBLE);
-                    listView.setVisibility(View.GONE);
-
-                    // Add map view to view hierarchy
-                    ((ViewGroup) getView()).addView(mapView);
+                    binding.map.setVisibility(View.VISIBLE);
+                    binding.exploreList.setVisibility(View.GONE);
                 }
             }
         });

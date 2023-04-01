@@ -16,9 +16,14 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.notconstraintlayout.R;
+import com.example.notconstraintlayout.UserProfile;
 import com.example.notconstraintlayout.databinding.FragmentLeaderboardBinding;
+import com.example.notconstraintlayout.userDBManager;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 public class LeaderBoardFragment extends Fragment {
 
@@ -26,12 +31,6 @@ public class LeaderBoardFragment extends Fragment {
     RecyclerView recyclerView;
     ArrayList<PlayerListClass> arrayList = new ArrayList<>();
     ArrayList<PlayerListClass> searchList;
-
-    String[] playerList = new String[]{"Ada Loveace", "Prateek", "Anna", "Ruoyun", "Adi",
-            "Vinu","Dhairya", "Temba","kartik","Shreya","Smag","Hannah","Josh","Cindy"};
-
-    String[] playerPoint = new String[]{"12400","12200","12100","11900","11500","11455","11412",
-            "10000","9900","9869","900","0","8000","10"};
 
     private FragmentLeaderboardBinding binding;
 
@@ -52,25 +51,14 @@ public class LeaderBoardFragment extends Fragment {
         View view = inflater.inflate(fragment_leaderboard,container,false);
         searchView = view.findViewById(R.id.leader_board_search);
         recyclerView = view.findViewById(R.id.recycle_view);
+        searchList = new ArrayList<>();
         searchView.setIconified(false);
         searchView.clearFocus();
 
-        for (int i = 0; i < playerList.length; i++){
-            PlayerListClass playerListClass = new PlayerListClass();
-            playerListClass.setPlayerName(playerList[i]);
-            playerListClass.setPlayerPoint(playerPoint[i]);
-            arrayList.add(playerListClass);
-
-        }
+        loadLeaderboardData();
         //RecyclerView recyclerView = (RecyclerView)
 
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
-
-
-//        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(LeaderboardFragment.this);
-
-
-//        recyclerView.setLayoutManager(layoutManager);
 
         PlayerAdapter playerAdapter = new PlayerAdapter(LeaderBoardFragment.this, arrayList);
         recyclerView.setAdapter(playerAdapter);
@@ -78,77 +66,61 @@ public class LeaderBoardFragment extends Fragment {
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
-
-                searchList = new ArrayList<>();
-
-                if(query.length() > 0){
-
-                    for (int i= 0; i < arrayList.size(); i++) {
-                        if(arrayList.get(i).getPlayerName().toUpperCase().contains(query.toUpperCase())){
-
-                            PlayerListClass playerListClass = new PlayerListClass();
-                            playerListClass.setPlayerName(arrayList.get(i).getPlayerName());
-                            playerListClass.setPlayerPoint(arrayList.get(i).getPlayerPoint());
-                            searchList.add(playerListClass);
-
-                        }
-                    }
-
-                    RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getActivity());
-                    recyclerView.setLayoutManager(layoutManager);
-
-                    PlayerAdapter playerAdapter = new PlayerAdapter(LeaderBoardFragment.this, searchList);
-                    recyclerView.setAdapter(playerAdapter);
-                }
-
-                else{
-                    RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getActivity());
-                    recyclerView.setLayoutManager(layoutManager);
-
-                    PlayerAdapter playerAdapter = new PlayerAdapter(LeaderBoardFragment.this, arrayList);
-                    recyclerView.setAdapter(playerAdapter);
-                }
-
+                filterLeaderboardData(query);
                 return false;
             }
 
             @Override
             public boolean onQueryTextChange(String newText) {
-
-                searchList = new ArrayList<>();
-
-                if(newText.length() > 0){
-
-                    for (int i= 0; i < arrayList.size(); i++) {
-                        if(arrayList.get(i).getPlayerName().toUpperCase().contains(newText.toUpperCase())){
-
-                            PlayerListClass playerListClass = new PlayerListClass();
-                            playerListClass.setPlayerName(arrayList.get(i).getPlayerName());
-                            playerListClass.setPlayerPoint(arrayList.get(i).getPlayerPoint());
-                            searchList.add(playerListClass);
-
-                        }
-                    }
-
-                    RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getActivity());
-                    recyclerView.setLayoutManager(layoutManager);
-
-                    PlayerAdapter playerAdapter = new PlayerAdapter(LeaderBoardFragment.this, searchList);
-                    recyclerView.setAdapter(playerAdapter);
-                }
-
-                else{
-                    RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getActivity());
-                    recyclerView.setLayoutManager(layoutManager);
-
-                    PlayerAdapter playerAdapter = new PlayerAdapter(LeaderBoardFragment.this, arrayList);
-                    recyclerView.setAdapter(playerAdapter);
-                }
+                filterLeaderboardData(newText);
                 return false;
             }
         });
 
+
         return view;
+    }
+
+    private void filterLeaderboardData(String query) {
+        if (query.isEmpty()) {
+            PlayerAdapter playerAdapter = new PlayerAdapter(LeaderBoardFragment.this, arrayList);
+            recyclerView.setAdapter(playerAdapter);
+        } else {
+            searchList.clear();
+            for (PlayerListClass player : arrayList) {
+                if (player.getPlayerName().toUpperCase().contains(query.toUpperCase())) {
+                    searchList.add(player);
+                }
+            }
+            PlayerAdapter playerAdapter = new PlayerAdapter(LeaderBoardFragment.this, searchList);
+            recyclerView.setAdapter(playerAdapter);
+        }
+    }
+
+    private void loadLeaderboardData() {
+        userDBManager userDbManager = new userDBManager(requireContext());
+        userDbManager.getUsers(new userDBManager.OnUsersLoadedListener() {
+            @Override
+            public void onUsersLoaded(List<UserProfile> userProfiles) {
+                arrayList.clear();
+                Collections.sort(userProfiles, new Comparator<UserProfile>() {
+                    @Override
+                    public int compare(UserProfile u1, UserProfile u2) {
+                        return u2.getTotalScore() - u1.getTotalScore();
+                    }
+                });
+                int rank = 1;
+                for (UserProfile userProfile : userProfiles) {
+                    PlayerListClass playerListClass = new PlayerListClass();
+                    playerListClass.setPlayerName(userProfile.getUsername());
+                    playerListClass.setPlayerPoint(String.valueOf(userProfile.getTotalScore()));
+                    playerListClass.setPlayerRank(rank++);
+                    arrayList.add(playerListClass);
+                }
+                PlayerAdapter playerAdapter = new PlayerAdapter(LeaderBoardFragment.this, arrayList);
+                recyclerView.setAdapter(playerAdapter);
+            }
+        });
     }
 }
 

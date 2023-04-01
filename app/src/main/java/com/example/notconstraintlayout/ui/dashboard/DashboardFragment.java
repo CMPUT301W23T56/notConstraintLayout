@@ -41,13 +41,15 @@ import com.journeyapps.barcodescanner.ScanOptions;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 
 
-public class DashboardFragment extends Fragment {
+public class DashboardFragment extends Fragment implements userDBManager.OnUserDocumentUpdatedListener {
 
     private FragmentDashboardBinding binding;
     private ListView mListView;
@@ -60,6 +62,8 @@ public class DashboardFragment extends Fragment {
 
     private List<String> scannedCodes;
 
+    private TextView scoreTextView;
+    private TextView scannedTextView;
     ActivityResultLauncher<ScanOptions> barCodeLauncher;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -75,6 +79,7 @@ public class DashboardFragment extends Fragment {
         mListView.setAdapter(mAdapter);
 
         userDBManager userDBManager = new userDBManager(requireContext());
+        userDBManager.addUserDocumentListener(this);
         userDBManager.getUserProfile(new userDBManager.OnUserProfileLoadedListener() {
             @Override
             public void onUserProfileLoaded(UserProfile userProfile) {
@@ -92,6 +97,19 @@ public class DashboardFragment extends Fragment {
             }
         });
 
+        binding.sort.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Collections.sort(mQrCodes, new Comparator<QrClass>() {
+                    @Override
+                    public int compare(QrClass o1, QrClass o2) {
+                        return o2.getPoints() - o1.getPoints();
+                    }
+                });
+                mAdapter.notifyDataSetChanged();
+            }
+        });
+
         binding.myFab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -99,6 +117,19 @@ public class DashboardFragment extends Fragment {
             }
         });
         return root;
+    }
+
+    @Override
+    public void onUserDocumentUpdated(UserProfile userProfile) {
+        if (userProfile != null) {
+            // Update the UI with the new values for Total Score and Total Scanned
+            if (scoreTextView != null) {
+                scoreTextView.setText(String.valueOf(userProfile.getTotalScore()));
+            }
+            if (scannedTextView != null) {
+                scannedTextView.setText(String.valueOf(userProfile.getTotalScanned()));
+            }
+        }
     }
 
     private static final int PERMISSION_REQUEST_CAMERA = 2;
@@ -166,18 +197,6 @@ public class DashboardFragment extends Fragment {
             }
         });
     }
-//        barCodeLauncher = registerForActivityResult(new ScanContract(), result -> {
-//            // Show the result of scanned QR code in the text
-//            if (result.getContents() != null) {
-//                String name = calculateName(result.getContents());
-//                int score = computeScore(result.getContents());
-//                new androidx.appcompat.app.AlertDialog.Builder(getContext())
-//                        .setTitle("Score and Name")
-//                        .setMessage("Your score is: " + score + "\nYour Name is: " + name)
-//                        .setPositiveButton(android.R.string.ok, null)
-//                        .show(); // Show alertDialogue box to the user
-//            }
-//        });
 
 
     @Override

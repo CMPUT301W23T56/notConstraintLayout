@@ -1,15 +1,19 @@
 package com.example.notconstraintlayout.ui.dashboard;
 
-import android.app.AlertDialog;
+import static android.app.Activity.RESULT_OK;
+import static android.content.ContentValues.TAG;
+
+import android.Manifest;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.provider.MediaStore;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -17,88 +21,183 @@ import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.ViewModelProvider;
 
 import com.example.notconstraintlayout.CaptureAct;
+import com.example.notconstraintlayout.QrClass;
+import com.example.notconstraintlayout.QrCodeAdapter;
 import com.example.notconstraintlayout.R;
+import com.example.notconstraintlayout.UserProfile;
 import com.example.notconstraintlayout.databinding.FragmentDashboardBinding;
+import com.example.notconstraintlayout.userDBManager;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.zxing.integration.android.IntentIntegrator;
-import com.google.zxing.integration.android.IntentResult;
 import com.journeyapps.barcodescanner.ScanContract;
 import com.journeyapps.barcodescanner.ScanOptions;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class DashboardFragment extends Fragment {
+
+
+public class DashboardFragment extends Fragment implements userDBManager.OnUserDocumentUpdatedListener {
+
     private FragmentDashboardBinding binding;
-    ListView listView;
-    ArrayAdapter<String> arrayAdapter;
-    Button Edit;
+    private ListView mListView;
+    private QrCodeAdapter mAdapter;
+    private ArrayList<QrClass> mQrCodes = new ArrayList<>();
     private static final int REQUEST_CODE_QR_SCAN = 0;
+    private static final int REQUEST_IMAGE_CAPTURE = 1;
+
     FloatingActionButton scan_button;
 
     private List<String> scannedCodes;
 
+    private TextView scoreTextView;
+    private TextView scannedTextView;
     ActivityResultLauncher<ScanOptions> barCodeLauncher;
+
+    public View onCreateView(@NonNull LayoutInflater inflater,
+                             ViewGroup container, Bundle savedInstanceState) {
+        binding = FragmentDashboardBinding.inflate(inflater, container, false);
+        View root = binding.getRoot();
+        final TextView textView = binding.username;
+        final TextView scoreTextView = binding.Scorevalue;
+        final TextView scannedTextView = binding.Scannedvalue;
+
+        mListView = binding.dashboardlist;
+        mAdapter = new QrCodeAdapter(requireContext(), mQrCodes);
+        mListView.setAdapter(mAdapter);
+
+        userDBManager userDBManager = new userDBManager(requireContext());
+        userDBManager.addUserDocumentListener(this);
+        userDBManager.getUserProfile(new userDBManager.OnUserProfileLoadedListener() {
+            @Override
+            public void onUserProfileLoaded(UserProfile userProfile) {
+                if (userProfile != null) {
+                    String username = userProfile.getUsername();
+                    textView.setText(username);
+                    scoreTextView.setText(String.valueOf(userProfile.getTotalScore()));
+                    scannedTextView.setText(String.valueOf(userProfile.getTotalScanned()));
+                    mQrCodes.clear();
+                    mQrCodes.addAll(userProfile.getScannedQrCodes());
+                    mAdapter.notifyDataSetChanged();
+                } else {
+                    Log.d(TAG, "Failed to load user profile.");
+                }
+            }
+        });
+
+        binding.sort.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Collections.sort(mQrCodes, new Comparator<QrClass>() {
+                    @Override
+                    public int compare(QrClass o1, QrClass o2) {
+                        return o2.getPoints() - o1.getPoints();
+                    }
+                });
+                mAdapter.notifyDataSetChanged();
+            }
+        });
+
+        binding.myFab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                scanQrCode();
+            }
+        });
+        return root;
+    }
+
+    @Override
+    public void onUserDocumentUpdated(UserProfile userProfile) {
+        if (userProfile != null) {
+            // Update the UI with the new values for Total Score and Total Scanned
+            if (scoreTextView != null) {
+                scoreTextView.setText(String.valueOf(userProfile.getTotalScore()));
+            }
+            if (scannedTextView != null) {
+                scannedTextView.setText(String.valueOf(userProfile.getTotalScanned()));
+            }
+        }
+    }
+
+    private static final int PERMISSION_REQUEST_CAMERA = 2;
+
+    public void openCameraToTakePicture() {
+        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(requireActivity(), new String[]{Manifest.permission.CAMERA}, PERMISSION_REQUEST_CAMERA);
+        } else {
+            Log.d("Camera", "Opening camera");
+            Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+            if (takePictureIntent.resolveActivity(requireActivity().getPackageManager()) != null) {
+                startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
+            }
+        }
+    }
 
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
 
-        // Move the registerForActivityResult() method call to onAttach() method
+        userDBManager userManager = new userDBManager(requireContext());
+
         ScanOptions options = new ScanOptions();
         options.setPrompt("Please Scan the code");
         options.setBeepEnabled(true);
         options.setCaptureActivity(CaptureAct.class); // To capture QR code through the camera
 
         barCodeLauncher = registerForActivityResult(new ScanContract(), result -> {
-            // Show the result of scanned QR code in the text
             if (result.getContents() != null) {
                 String name = calculateName(result.getContents());
                 int score = computeScore(result.getContents());
+                QrClass qrClass = new QrClass(name, score);
+                userManager.addQrCode(qrClass, new userDBManager.OnQrCodeAddedListener() {
+                    @Override
+                    public void onQrCodeAdded() {
+                        Log.d(TAG, "QR code added.");
+                    }
+                }, new userDBManager.OnQrCodesChangedListener() {
+                    @Override
+                    public void onQrCodesChanged(List<QrClass> qrCodes) {
+                        mQrCodes.clear();
+                        mQrCodes.addAll(qrCodes);
+                        mAdapter.notifyDataSetChanged();
+                    }
+                });
+                LayoutInflater inflater = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                View customView = inflater.inflate(R.layout.custom_alert_dialog, null);
+
+                TextView nameAndScore = customView.findViewById(R.id.name_and_score);
+                nameAndScore.setText("Your Qr Name is: " + name + "\nYour Score is: " + score);
+
+                Button takePictureButton = customView.findViewById(R.id.take_picture_button);
+                takePictureButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        openCameraToTakePicture();
+                    }
+                });
                 new androidx.appcompat.app.AlertDialog.Builder(getContext())
                         .setTitle("Score and Name")
-                        .setMessage("Your score is: " + score + "\nYour Name is: " + name)
                         .setPositiveButton(android.R.string.ok, null)
+                        .setView(customView)
                         .show(); // Show alertDialogue box to the user
+
             }
         });
     }
 
-    public View onCreateView(@NonNull LayoutInflater inflater,
-                             ViewGroup container, Bundle savedInstanceState) {
-        DashboardViewModel dashboardViewModel =
-                new ViewModelProvider(requireActivity()).get(DashboardViewModel.class);
-        View view = inflater.inflate(R.layout.fragment_dashboard, container, false);
-        scan_button = view.findViewById(R.id.my_fab);
-        binding = FragmentDashboardBinding.inflate(inflater, container, false);
-        View root = binding.getRoot();
-        final TextView textView = binding.username;
-        SharedPreferences sharedPreferences = requireActivity().getSharedPreferences("MySharedPref", Context.MODE_PRIVATE);
-        String username = sharedPreferences.getString("name", "defaultUsername");
-        textView.setText(username);
-
-
-        binding.myFab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                IntentIntegrator integrator = IntentIntegrator.forSupportFragment(DashboardFragment.this);
-                integrator.setPrompt("Please Scan the code");
-                integrator.setBeepEnabled(true);
-                integrator.setOrientationLocked(true);
-                integrator.initiateScan();
-                scanQrCode();
-            }
-        });
-        return root;
-    }
 
     @Override
     public void onDestroyView() {
@@ -116,28 +215,31 @@ public class DashboardFragment extends Fragment {
         barCodeLauncher.launch(options);
     }
 
-    // Rest of the code
-
-
-
     @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        // Check if the request code matches the code used to start the scanner
-        if (requestCode == IntentIntegrator.REQUEST_CODE) {
-            IntentResult result = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
-            if (result != null) {
-                if (result.getContents() != null) {
-                    // Handle the scanned result
-                    Toast.makeText(getActivity(), result.getContents(), Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(getActivity(), "Scanning cancelled", Toast.LENGTH_SHORT).show();
-                }
-            }
+        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
+            Bundle extras = data.getExtras();
+            Bitmap imageBitmap = (Bitmap) extras.get("data"); // stores the picture
+
+            // Handle the captured image here (e.g., display it in an ImageView)
+        } else if (requestCode == IntentIntegrator.REQUEST_CODE) {
+            // Your existing QR code scanning handling code
         }
     }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == PERMISSION_REQUEST_CAMERA) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                openCameraToTakePicture();
+            } else {
+                Toast.makeText(requireContext(), "Camera permission is required to take pictures.", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
 
     private int computeScore(String Value) {
         // Calculate SHA-256 hash of the QR Value contents

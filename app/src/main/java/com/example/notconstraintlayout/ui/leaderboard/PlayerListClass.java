@@ -2,6 +2,7 @@ package com.example.notconstraintlayout.ui.leaderboard;
 
 public class PlayerListClass {
     String playerName, playerPoint;
+    int playerRank;
 
 
     public String getPlayerName() {
@@ -18,6 +19,14 @@ public class PlayerListClass {
 
     public void setPlayerPoint(String playerPoint) {
         this.playerPoint = playerPoint;
+    }
+
+    public int getPlayerRank() {
+        return playerRank;
+    }
+
+    public void setPlayerRank(int playerRank) {
+        this.playerRank = playerRank;
     }
 }
 

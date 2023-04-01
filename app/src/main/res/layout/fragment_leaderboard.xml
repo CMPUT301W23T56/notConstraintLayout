@@ -28,11 +28,17 @@
         android:background="@color/dusty_blue"
         app:queryHint="Search Players" />
 
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:visibility="gone" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycle_view"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_width="402dp"
+        android:layout_height="457dp"
         android:layout_below="@id/textLeaderboard"
         android:layout_marginStart="10dp"
         android:layout_marginTop="16dp"

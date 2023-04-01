@@ -16,6 +16,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -26,6 +27,9 @@ import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.ItemTouchHelper;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.notconstraintlayout.CaptureAct;
 import com.example.notconstraintlayout.QrClass;
@@ -36,6 +40,7 @@ import com.example.notconstraintlayout.databinding.FragmentDashboardBinding;
 import com.example.notconstraintlayout.userDBManager;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.material.behavior.SwipeDismissBehavior;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -98,42 +103,61 @@ public class DashboardFragment extends Fragment {
             }
         });
 
+//
+//        //new code version 1
+//        FirebaseFirestore db = FirebaseFirestore.getInstance();
+//        final CollectionReference collectionReference = db.collection("QRCode");
+//                // return a boolean value, if user long click a item, then will return true, vice versa
+//        mListView = mListView.findViewById(R.id.dashboardlist);
+//
+//        mListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+//            @Override
+//            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+//                longClickItem = mQrCodes.get(position);
+//                String qrName = longClickItem.getName();
+//
+//                Log.v("Long clicked,","position" +longClickItem);
+//
+//                // Every single time after a long click, the corresponding item will be delete
+//                // from the list
+//                collectionReference
+//                        .document(qrName)
+//                        .delete()
+//                        .addOnSuccessListener(new OnSuccessListener<Void>() {
+//                            @Override
+//                            public void onSuccess(Void unused) {
+//                                Log.d(TAG, "successfully deleted!");
+//                            }
+//                        })
+//                        .addOnFailureListener(new OnFailureListener() {
+//                            @Override
+//                            public void onFailure(@NonNull Exception e) {
+//                                Log.w(TAG,"Error deleting document",e);
+//                            }
+//                        });
+//
+//                return false;
+//            }
+//        });
+//
 
-        //new code
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        final CollectionReference collectionReference = db.collection("QRCode");
-                // return a boolean value, if user long click a item, then will return true, vice versa
-        mListView = mListView.findViewById(R.id.dashboardlist);
-        mListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-            @Override
-            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-                longClickItem = mQrCodes.get(position);
-                String qrName = longClickItem.getName();
+    // new code version 2
+    final ItemTouchHelper.SimpleCallback itemTouchHelperCallback = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.RIGHT | ItemTouchHelper.LEFT) {
+        @Override
+        public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
+            return false;
+        }
 
-                Log.v("Long clicked,","position" +longClickItem);
+        @Override
+        public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+            int position = viewHolder.getAbsoluteAdapterPosition();
+            mListView.removeViewAt(position);
+//            mListView.removeView(viewHolder.getAbsoluteAdapterPosition(position));
+            mAdapter.notifyDataSetChanged();
+        }
+    };
 
-                // Every single time after a long click, the corresponding item will be delete
-                // from the list
-                collectionReference
-                        .document(qrName)
-                        .delete()
-                        .addOnSuccessListener(new OnSuccessListener<Void>() {
-                            @Override
-                            public void onSuccess(Void unused) {
-                                Log.d(TAG, "successfully deleted!");
-                            }
-                        })
-                        .addOnFailureListener(new OnFailureListener() {
-                            @Override
-                            public void onFailure(@NonNull Exception e) {
-                                Log.w(TAG,"Error deleting document",e);
-                            }
-                        });
-
-                return false;
-            }
-        });
-
+        // old code
         binding.myFab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -142,6 +166,7 @@ public class DashboardFragment extends Fragment {
         });
         return root;
     }
+
 
     private static final int PERMISSION_REQUEST_CAMERA = 2;
 

@@ -57,16 +57,16 @@
 
     </LinearLayout>
 
-<!--    <LinearLayout-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:orientation="vertical">-->
+    <!--    <LinearLayout-->
+    <!--        android:layout_width="match_parent"-->
+    <!--        android:layout_height="wrap_content"-->
+    <!--        android:orientation="vertical">-->
 
-<!--        <TextView-->
-<!--            android:layout_width="match_parent"-->
-<!--            android:layout_height="wrap_content"/>-->
+    <!--        <TextView-->
+    <!--            android:layout_width="match_parent"-->
+    <!--            android:layout_height="wrap_content"/>-->
 
-<!--    </LinearLayout>-->
+    <!--    </LinearLayout>-->
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -77,7 +77,6 @@
             android:id="@+id/username"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:text="Ada LoveLace"
             android:layout_marginLeft="20dp"
             android:textColor="@color/black"
             android:textSize="40dp"
@@ -107,30 +106,30 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal">
 
-<!--        <TextView-->
+        <!--        <TextView-->
 
-<!--            android:layout_width="match_parent"-->
-<!--            android:layout_height="match_parent"-->
-<!--            android:text=""-->
-<!--            android:textColor="@color/black"-->
-<!--            android:textSize="15dp" />-->
+        <!--            android:layout_width="match_parent"-->
+        <!--            android:layout_height="match_parent"-->
+        <!--            android:text=""-->
+        <!--            android:textColor="@color/black"-->
+        <!--            android:textSize="15dp" />-->
 
 
     </LinearLayout>
 
-<!--    <RelativeLayout-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:orientation="horizontal">-->
-<!--        <com.google.android.material.floatingactionbutton.FloatingActionButton-->
-<!--            android:id="@+id/my_fab"-->
-<!--            android:layout_width="wrap_content"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:src="@drawable/baseline_qr_code_scanner_24"-->
-<!--            app:backgroundTint="@color/orange"-->
-<!--            android:layout_alignParentRight="true"-->
-<!--            app:fabSize="normal" />-->
-<!--    </RelativeLayout>-->
+    <!--    <RelativeLayout-->
+    <!--        android:layout_width="match_parent"-->
+    <!--        android:layout_height="wrap_content"-->
+    <!--        android:orientation="horizontal">-->
+    <!--        <com.google.android.material.floatingactionbutton.FloatingActionButton-->
+    <!--            android:id="@+id/my_fab"-->
+    <!--            android:layout_width="wrap_content"-->
+    <!--            android:layout_height="wrap_content"-->
+    <!--            android:src="@drawable/baseline_qr_code_scanner_24"-->
+    <!--            app:backgroundTint="@color/orange"-->
+    <!--            android:layout_alignParentRight="true"-->
+    <!--            app:fabSize="normal" />-->
+    <!--    </RelativeLayout>-->
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -176,11 +175,10 @@
 
 
         <TextView
-            android:id="@+id/Score_value"
-            android:layout_width="wrap_content"
+            android:id="@+id/Scorevalue"
+            android:layout_width="120dp"
             android:layout_height="wrap_content"
             android:layout_marginLeft="14dp"
-            android:text="2400"
             android:textColor="@color/black"
             android:textSize="30dp" />
 
@@ -189,16 +187,15 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="0dp"
-            android:text="                  "
+            android:text="          "
             android:textColor="@color/black"
             android:textSize="20dp" />
 
         <TextView
-            android:id="@+id/Scanned_value"
+            android:id="@+id/Scannedvalue"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="0dp"
-            android:text="10"
             android:textColor="@color/black"
             android:textSize="30dp" />
     </LinearLayout>
@@ -275,7 +272,7 @@
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/ic_baseline_sorting_24"/>
+            android:src="@drawable/baseline_sorting_24"/>
 
 
 
@@ -289,7 +286,7 @@
         android:orientation="vertical">
 
         <ListView
-            android:id="@+id/myListView"
+            android:id="@+id/dashboardlist"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:text="No items found"
@@ -307,4 +304,3 @@
 
 
 </LinearLayout>
-

@@ -1,15 +1,11 @@
 package com.example.notconstraintlayout;
 
 import android.content.Context;
-import android.content.SharedPreferences;
-
-import com.example.notconstraintlayout.QrClass;
-import com.google.gson.Gson;
 
 import java.util.ArrayList;
 
 public class UserProfile {
-    private int contactInfo;
+    private long contactInfo;
     private String username;
     private int totalScore;
     private int totalScanned;
@@ -20,34 +16,44 @@ public class UserProfile {
         this.context = context;
     }
 
-    public UserProfile(String username, int totalScore) {
-        this.username = username;
-        this.totalScore = totalScore;
+    public UserProfile() {
+        // Set default values
+        this.totalScore = 0;
+        this.totalScanned = 0;
+        this.scannedQrCodes = new ArrayList<>();
     }
 
-    public void setContactInfo(int contactInfo) {
+    public UserProfile(Context context, String username, long contactInfo, int totalScore, int totalScanned, ArrayList<QrClass> scannedQrCodes) {
+        this.context = context;
+        this.username = username;
         this.contactInfo = contactInfo;
-        saveUserDetails();
+        this.totalScore = totalScore;
+        this.totalScanned = totalScanned;
+        this.scannedQrCodes = scannedQrCodes;
+    }
+
+    public void setContactInfo(long contactInfo) {
+        this.contactInfo = contactInfo;
     }
 
     public void setUsername(String username) {
         this.username = username;
-        saveUserDetails();
     }
 
     public void setTotalScore(int totalScore) {
         this.totalScore = totalScore;
-        saveUserDetails();
     }
 
     public void setTotalScanned(int totalScanned) {
         this.totalScanned = totalScanned;
-        saveUserDetails();
     }
 
     public void setScannedQrCodes(ArrayList<QrClass> scannedQrCodes) {
         this.scannedQrCodes = scannedQrCodes;
-        saveUserDetails();
+    }
+
+    public long getContactInfo() {
+        return contactInfo;
     }
 
     public String getUsername() {
@@ -58,16 +64,15 @@ public class UserProfile {
         return totalScore;
     }
 
-    private void saveUserDetails() {
-        SharedPreferences sharedPreferences = context.getSharedPreferences("UserDetails", Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putInt("contactInfo", contactInfo);
-        editor.putString("username", username);
-        editor.putInt("totalScore", totalScore);
-        editor.putInt("totalScanned", totalScanned);
-        Gson gson = new Gson();
-        String qrCodesJson = gson.toJson(scannedQrCodes);
-        editor.putString("scannedQrCodes", qrCodesJson);
-        editor.apply();
+    public int getTotalScanned() {
+        return totalScanned;
+    }
+
+    public void addQrCode(QrClass qrCode) {
+        scannedQrCodes.add(qrCode);
+    }
+
+    public ArrayList<QrClass> getScannedQrCodes() {
+        return scannedQrCodes;
     }
 }

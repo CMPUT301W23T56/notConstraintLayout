@@ -33,17 +33,17 @@ public class LeaderBoardFragment extends Fragment {
     String[] playerPoint = new String[]{"12400","12200","12100","11900","11500","11455","11412",
             "10000","9900","9869","900","0","8000","10"};
 
-    private FragmentLeaderBoardBinding binding;
+    private FragmentLeaderboardBinding binding;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
         com.example.notconstraintlayout.ui.leaderboard.LeaderboardViewModel leaderboardViewModel =
                 new ViewModelProvider(this).get(com.example.notconstraintlayout.ui.leaderboard.LeaderboardViewModel.class);
 
-        binding = FragmentLeaderBoardBinding.inflate(inflater, container, false);
+        binding = FragmentLeaderboardBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
 
-        final TextView textView = binding.textLeaderBoard;
+        final TextView textView = binding.textLeaderboard;
         leaderboardViewModel.getText().observe(getViewLifecycleOwner(), textView::setText);
 
         super.onCreate(savedInstanceState);
@@ -151,3 +151,4 @@ public class LeaderBoardFragment extends Fragment {
         return view;
     }
 }
+

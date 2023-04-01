@@ -3,6 +3,7 @@ package com.example.notconstraintlayout.ui.explore;
 import static android.content.ContentValues.TAG;
 
 import android.Manifest;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.location.Criteria;
@@ -16,6 +17,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
@@ -42,7 +44,7 @@ import java.util.List;
 
 import io.ghyeok.stickyswitch.widget.StickySwitch;
 
-public class ExploreFragment extends Fragment implements OnMapReadyCallback, LocationListener {
+public abstract class ExploreFragment extends Fragment implements OnMapReadyCallback, LocationListener {
 
     private FragmentExploreBinding binding;
     private GoogleMap mMap;
@@ -55,6 +57,11 @@ public class ExploreFragment extends Fragment implements OnMapReadyCallback, Loc
     private LocationManager locationManager;
     private String locationProvider;
     private Location userLocation;
+
+    public abstract void OnAttach(@NonNull Context context);
+
+    @NonNull
+    public abstract Dialog onCreateDialog(@Nullable Bundle savedInstanceState);
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -77,6 +84,7 @@ public class ExploreFragment extends Fragment implements OnMapReadyCallback, Loc
         qrArray.add(new QrClass("cool FroMoMegaSpectralCrab", new LatLng(53.520796, -113.505105), 200));
         qrArray.add(new QrClass("cool FroLoUltraSpectralCrab", new LatLng(53.525067, -113.526767), 300));
         qrArray.add(new QrClass("hot GloLoUltraSpectralShark", new LatLng(53.521092, -113.530964), 400));
+
 
 
         stickySwitch.setOnSelectedChangeListener(new StickySwitch.OnSelectedChangeListener() {
@@ -129,6 +137,8 @@ public class ExploreFragment extends Fragment implements OnMapReadyCallback, Loc
         }
         recyclerView = root.findViewById(R.id.explore_list);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+
+
 
         QrListAdapter adapter = new QrListAdapter(qrArray, userLocation);
         recyclerView.setAdapter(adapter);

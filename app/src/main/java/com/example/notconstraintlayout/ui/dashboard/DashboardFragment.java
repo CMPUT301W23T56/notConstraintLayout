@@ -14,6 +14,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -33,7 +34,11 @@ import com.example.notconstraintlayout.R;
 import com.example.notconstraintlayout.UserProfile;
 import com.example.notconstraintlayout.databinding.FragmentDashboardBinding;
 import com.example.notconstraintlayout.userDBManager;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.journeyapps.barcodescanner.ScanContract;
 import com.journeyapps.barcodescanner.ScanOptions;
@@ -55,6 +60,7 @@ public class DashboardFragment extends Fragment {
     private ArrayList<QrClass> mQrCodes = new ArrayList<>();
     private static final int REQUEST_CODE_QR_SCAN = 0;
     private static final int REQUEST_IMAGE_CAPTURE = 1;
+    QrClass longClickItem;
 
     FloatingActionButton scan_button;
 
@@ -89,6 +95,42 @@ public class DashboardFragment extends Fragment {
                 } else {
                     Log.d(TAG, "Failed to load user profile.");
                 }
+            }
+        });
+
+
+        //new code
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        final CollectionReference collectionReference = db.collection("QRCode");
+                // return a boolean value, if user long click a item, then will return true, vice versa
+        mListView = mListView.findViewById(R.id.dashboardlist);
+        mListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+                longClickItem = mQrCodes.get(position);
+                String qrName = longClickItem.getName();
+
+                Log.v("Long clicked,","position" +longClickItem);
+
+                // Every single time after a long click, the corresponding item will be delete
+                // from the list
+                collectionReference
+                        .document(qrName)
+                        .delete()
+                        .addOnSuccessListener(new OnSuccessListener<Void>() {
+                            @Override
+                            public void onSuccess(Void unused) {
+                                Log.d(TAG, "successfully deleted!");
+                            }
+                        })
+                        .addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                Log.w(TAG,"Error deleting document",e);
+                            }
+                        });
+
+                return false;
             }
         });
 

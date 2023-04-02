@@ -73,6 +73,7 @@ public class DashboardFragment extends Fragment implements userDBManager.OnUserD
     private TextView textView;
     ActivityResultLauncher<ScanOptions> barCodeLauncher;
     public QrCodeDBManager qrDb;
+    public int scannedBy = 0;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -181,7 +182,7 @@ public class DashboardFragment extends Fragment implements userDBManager.OnUserD
                 String name = calculateName(result.getContents());
                 int score = computeScore(result.getContents());
 
-                QrClass qrClass = new QrClass(name, score, result.getContents());
+                QrClass qrClass = new QrClass(name, score, String.valueOf(result.getContents().hashCode()));
 
 
                 qrDb.saveQRCodes(qrClass, new OnCompleteListener<Void>() {

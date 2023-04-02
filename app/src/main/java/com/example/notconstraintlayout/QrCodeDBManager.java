@@ -23,27 +23,20 @@ import java.util.List;
 public class QrCodeDBManager {
 
 
-        private FirebaseFirestore db;
-        private CollectionReference qrCodesRef;
+    private FirebaseFirestore db;
+    private CollectionReference qrCodesRef;;
 
-        public QrCodeDBManager() {
-            db = FirebaseFirestore.getInstance();
-            qrCodesRef = db.collection("qrCodes");
-        }
-
-        public void saveQRCodes(QrClass qrCode, OnCompleteListener<Void> onCompleteListener) {
-            qrCodesRef.document(qrCode.getHash())
-                    .set(qrCode.toMap())
-                    .addOnCompleteListener(onCompleteListener);
-        }
+    public QrCodeDBManager() {
+        db = FirebaseFirestore.getInstance();
+        qrCodesRef = db.collection("qrCodes");
     }
 
-//    private FirebaseFirestore db = FirebaseFirestore.getInstance();
-//    private CollectionReference collectionRef = db.collection("QRCodes");
-//
-//    public QrCodeDBManager() {
-//    }
-//
+    public void saveQRCodes(QrClass qrCode, OnCompleteListener<Void> onCompleteListener) {
+        qrCodesRef.document(qrCode.getHash())
+                .set(qrCode.toMap())
+                .addOnCompleteListener(onCompleteListener);
+    }
+
 //    public void saveQRCodes(QrClass qrcode) {
 //        HashMap<String, Object> data = new HashMap<>();
 //        data.put("location image", qrcode.getLocation_image());
@@ -52,7 +45,7 @@ public class QrCodeDBManager {
 //        data.put("face", qrcode.getFace());
 //        data.put("location", qrcode.getLocation());
 //
-//        collectionRef
+//        qrCodesRef
 //                .document(qrcode.getName())
 //                .set(data)
 //                .addOnSuccessListener(new OnSuccessListener<Void>() {
@@ -68,28 +61,30 @@ public class QrCodeDBManager {
 //                    }
 //                });
 //    }
-//    public void getUsers(final QrCodeDBManager.OnUsersLoadedListener listener) {
-//        collectionRef.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-//            @Override
-//            public void onComplete(@NonNull Task<QuerySnapshot> task) {
-//                if (task.isSuccessful()) {
-//                    List<QrClass> qrCodes = new ArrayList<>();
-//                    for (DocumentSnapshot document : task.getResult()) {
-//                        QrClass qrCode = document.toObject(QrClass.class);
-//                        qrCodes.add(qrCode);
-//                    }
-//                    listener.onUsersLoaded(qrCodes);
-//                } else {
-//                    Log.d(TAG, "Error getting documents: ", task.getException());
-//                    listener.onUsersLoaded(Collections.emptyList());
-//                }
-//            }
-//        });
-//    }
 
-//    public interface OnUsersLoadedListener {
-//        void onUsersLoaded(List<QrClass> userProfiles);
-//    }
+    public void displayQrCodes(final QrCodeDBManager.OnUsersLoadedListener listener) {
+        qrCodesRef.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                if (task.isSuccessful()) {
+                    List<QrClass> qrCodes = new ArrayList<>();
+                    for (DocumentSnapshot document : task.getResult()) {
+                        QrClass qrCode = document.toObject(QrClass.class);
+                        qrCodes.add(qrCode);
+                    }
+                    listener.onUsersLoaded(qrCodes);
+                } else {
+                    Log.d(TAG, "Error getting documents: ", task.getException());
+                    listener.onUsersLoaded(Collections.emptyList());
+                }
+            }
+        });
+    }
+
+    public interface OnUsersLoadedListener {
+        void onUsersLoaded(List<QrClass> userProfiles);
+    }
+}
 
 
 

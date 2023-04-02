@@ -28,6 +28,8 @@ import com.example.notconstraintlayout.QrCodeDBManager;
 import com.example.notconstraintlayout.R;
 import com.example.notconstraintlayout.UserProfile;
 import com.example.notconstraintlayout.databinding.FragmentExploreBinding;
+import com.example.notconstraintlayout.ui.leaderboard.LeaderBoardFragment;
+import com.example.notconstraintlayout.ui.leaderboard.PlayerAdapter;
 import com.example.notconstraintlayout.ui.leaderboard.PlayerListClass;
 import com.example.notconstraintlayout.userDBManager;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -42,6 +44,8 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import io.ghyeok.stickyswitch.widget.StickySwitch;
@@ -66,6 +70,20 @@ public class ExploreFragment extends Fragment implements OnMapReadyCallback, Loc
 
         binding = FragmentExploreBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
+
+        QrCodeDBManager qrDb = new QrCodeDBManager();
+        qrDb.displayQrCodes(new QrCodeDBManager.OnUsersLoadedListener() {
+            @Override
+            public void onUsersLoaded(List<QrClass> qrClassList) {
+                qrArray.clear();
+                for (QrClass qrClass : qrClassList) {
+                    qrArray.add(qrClass);
+                }
+                QrListAdapter adapter = new QrListAdapter(qrArray, userLocation);
+                recyclerView.setAdapter(adapter);
+            }
+        });
+
         binding.exploreList.setVisibility(View.VISIBLE);
         binding.map.setVisibility(View.GONE);
 
@@ -73,23 +91,6 @@ public class ExploreFragment extends Fragment implements OnMapReadyCallback, Loc
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
-
-//        QrCodeDBManager qrDb = new QrCodeDBManager();
-//        qrDb.getUsers(new QrCodeDBManager.OnUsersLoadedListener() {
-//            @Override
-//            public void onUsersLoaded(List<QrClass> qrClassList) {
-//                for (QrClass qrClass : qrClassList) {
-//                    qrArray.add(qrClass);
-//                }
-//            }
-//        });
-
-
-        qrArray.add(new QrClass("cool FroMoMegaSpectralCrab", new LatLng(53.517793, -113.513926), 100));
-        qrArray.add(new QrClass("cool FroMoMegaSpectralCrab", new LatLng(53.520796, -113.505105), 200));
-        qrArray.add(new QrClass("cool FroLoUltraSpectralCrab", new LatLng(53.525067, -113.526767), 300));
-        qrArray.add(new QrClass("hot GloLoUltraSpectralShark", new LatLng(53.521092, -113.530964), 400));
-
 
         stickySwitch.setOnSelectedChangeListener(new StickySwitch.OnSelectedChangeListener() {
             @Override
@@ -136,11 +137,9 @@ public class ExploreFragment extends Fragment implements OnMapReadyCallback, Loc
         recyclerView = root.findViewById(R.id.explore_list);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        QrListAdapter adapter = new QrListAdapter(qrArray, userLocation);
-        recyclerView.setAdapter(adapter);
-
         return root;
     }
+
 
     @Override
     public void onResume() {

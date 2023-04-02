@@ -4,6 +4,7 @@ import static android.app.Activity.RESULT_OK;
 import static android.content.ContentValues.TAG;
 
 import android.Manifest;
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -15,6 +16,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -34,6 +36,8 @@ import com.example.notconstraintlayout.R;
 import com.example.notconstraintlayout.UserProfile;
 import com.example.notconstraintlayout.databinding.FragmentDashboardBinding;
 import com.example.notconstraintlayout.userDBManager;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.journeyapps.barcodescanner.ScanContract;
@@ -65,15 +69,18 @@ public class DashboardFragment extends Fragment implements userDBManager.OnUserD
 
     private TextView scoreTextView;
     private TextView scannedTextView;
+
+    private TextView textView;
     ActivityResultLauncher<ScanOptions> barCodeLauncher;
+    public QrCodeDBManager qrDb;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
         binding = FragmentDashboardBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
-        final TextView textView = binding.username;
-        final TextView scoreTextView = binding.Scorevalue;
-        final TextView scannedTextView = binding.Scannedvalue;
+        textView = binding.username;
+        scoreTextView = binding.Scorevalue;
+        scannedTextView = binding.Scannedvalue;
 
         mListView = binding.dashboardlist;
         mAdapter = new QrCodeAdapter(requireContext(), mQrCodes);
@@ -108,6 +115,13 @@ public class DashboardFragment extends Fragment implements userDBManager.OnUserD
                     }
                 });
                 mAdapter.notifyDataSetChanged();
+            }
+        });
+
+        binding.edit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showEditProfileDialog();
             }
         });
 
@@ -147,13 +161,15 @@ public class DashboardFragment extends Fragment implements userDBManager.OnUserD
         }
     }
 
-    QrCodeDBManager qrDb;
+
 
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
 
         userDBManager userManager = new userDBManager(requireContext());
+        QrCodeDBManager qrDb = new QrCodeDBManager();
+
 
         ScanOptions options = new ScanOptions();
         options.setPrompt("Please Scan the code");
@@ -164,8 +180,21 @@ public class DashboardFragment extends Fragment implements userDBManager.OnUserD
             if (result.getContents() != null) {
                 String name = calculateName(result.getContents());
                 int score = computeScore(result.getContents());
-                QrClass qrClass = new QrClass(name, score);
-                qrDb.saveQRCodes(qrClass);
+
+                QrClass qrClass = new QrClass(name, score, result.getContents());
+
+
+                qrDb.saveQRCodes(qrClass, new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        if (task.isSuccessful()) {
+                            Log.d(TAG, "QR code saved to Firestore.");
+                        } else {
+                            Log.w(TAG, "Error saving QR code to Firestore.", task.getException());
+                        }
+                    }
+                });
+
                 userManager.addQrCode(qrClass, new userDBManager.OnQrCodeAddedListener() {
                     @Override
                     public void onQrCodeAdded() {
@@ -207,6 +236,60 @@ public class DashboardFragment extends Fragment implements userDBManager.OnUserD
     public void onDestroyView() {
         super.onDestroyView();
         binding = null;
+    }
+
+    public void showEditProfileDialog() {
+        LayoutInflater inflater = getLayoutInflater();
+        View dialogView = inflater.inflate(R.layout.edit_profile_dialog, null);
+        userDBManager userManager = new userDBManager(requireContext());
+
+
+        EditText editUsername = dialogView.findViewById(R.id.edit_username);
+        EditText editPhoneNumber = dialogView.findViewById(R.id.edit_phone_number);
+        Button updateButton = dialogView.findViewById(R.id.button_update);
+
+        // Get the current user's information
+        userManager.getUserProfile(new userDBManager.OnUserProfileLoadedListener() {
+            @Override
+            public void onUserProfileLoaded(UserProfile userProfile) {
+                if (userProfile != null) {
+                    editUsername.setText(userProfile.getUsername());
+                    editPhoneNumber.setText(Long.toString(userProfile.getContactInfo()));
+                } else {
+                    Log.d(TAG, "Failed to load user profile.");
+                }
+            }
+        });
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
+        builder.setView(dialogView)
+                .setTitle("Edit Profile");
+        final AlertDialog dialog = builder.create();
+        updateButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // Get the updated information from the EditText fields
+                String newUsername = editUsername.getText().toString();
+                String newPhoneNumber = editPhoneNumber.getText().toString();
+
+                // Update the user's information in the database
+                userManager.updateProfile(newUsername, newPhoneNumber, new userDBManager.OnUserProfileUpdatedListener() {
+                    @Override
+                    public void onUserProfileUpdated(UserProfile userProfile) {
+                        if (userProfile != null) {
+                            // Update the UI with the new information
+                            textView.setText(userProfile.getUsername());
+                            scoreTextView.setText(String.valueOf(userProfile.getTotalScore()));
+                            scannedTextView.setText(String.valueOf(userProfile.getTotalScanned()));
+                        } else {
+                            Log.d(TAG, "Failed to update user profile.");
+                        }
+                    }
+                });
+                dialog.dismiss();
+            }
+        });
+        dialog.show();
     }
 
     public void scanQrCode() {

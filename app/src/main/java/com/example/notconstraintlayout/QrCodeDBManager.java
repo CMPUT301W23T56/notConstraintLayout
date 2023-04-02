@@ -21,36 +21,53 @@ import java.util.HashMap;
 import java.util.List;
 
 public class QrCodeDBManager {
-    private FirebaseFirestore db = FirebaseFirestore.getInstance();
-    private CollectionReference collectionRef = db.collection("QRCodes");
 
-    public QrCodeDBManager() {
+
+        private FirebaseFirestore db;
+        private CollectionReference qrCodesRef;
+
+        public QrCodeDBManager() {
+            db = FirebaseFirestore.getInstance();
+            qrCodesRef = db.collection("qrCodes");
+        }
+
+        public void saveQRCodes(QrClass qrCode, OnCompleteListener<Void> onCompleteListener) {
+            qrCodesRef.document(qrCode.getHash())
+                    .set(qrCode.toMap())
+                    .addOnCompleteListener(onCompleteListener);
+        }
     }
 
-    public void saveQRCodes(QrClass qrcode) {
-        HashMap<String, Object> data = new HashMap<>();
-        data.put("location image", qrcode.getLocation_image());
-        data.put("name", qrcode.getLocation());
-        data.put("points", qrcode.getPoints());
-        data.put("face", qrcode.getFace());
-        data.put("location", qrcode.getLocation());
-
-        collectionRef
-                .document(qrcode.getName())
-                .set(data)
-                .addOnSuccessListener(new OnSuccessListener<Void>() {
-                    @Override
-                    public void onSuccess(Void unused) {
-                        Log.d(TAG, "User profile data has been saved successfully!");
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Log.d(TAG, "Failed to save user profile data: ", e);
-                    }
-                });
-    }
+//    private FirebaseFirestore db = FirebaseFirestore.getInstance();
+//    private CollectionReference collectionRef = db.collection("QRCodes");
+//
+//    public QrCodeDBManager() {
+//    }
+//
+//    public void saveQRCodes(QrClass qrcode) {
+//        HashMap<String, Object> data = new HashMap<>();
+//        data.put("location image", qrcode.getLocation_image());
+//        data.put("name", qrcode.getLocation());
+//        data.put("points", qrcode.getPoints());
+//        data.put("face", qrcode.getFace());
+//        data.put("location", qrcode.getLocation());
+//
+//        collectionRef
+//                .document(qrcode.getName())
+//                .set(data)
+//                .addOnSuccessListener(new OnSuccessListener<Void>() {
+//                    @Override
+//                    public void onSuccess(Void unused) {
+//                        Log.d(TAG, "User profile data has been saved successfully!");
+//                    }
+//                })
+//                .addOnFailureListener(new OnFailureListener() {
+//                    @Override
+//                    public void onFailure(@NonNull Exception e) {
+//                        Log.d(TAG, "Failed to save user profile data: ", e);
+//                    }
+//                });
+//    }
 //    public void getUsers(final QrCodeDBManager.OnUsersLoadedListener listener) {
 //        collectionRef.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
 //            @Override
@@ -70,9 +87,9 @@ public class QrCodeDBManager {
 //        });
 //    }
 
-    public interface OnUsersLoadedListener {
-        void onUsersLoaded(List<QrClass> userProfiles);
-    }
+//    public interface OnUsersLoadedListener {
+//        void onUsersLoaded(List<QrClass> userProfiles);
+//    }
 
-}
+
 

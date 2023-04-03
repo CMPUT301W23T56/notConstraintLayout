@@ -27,6 +27,10 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+/**
+ * The main class for the LeaderBoardFragment, which is responsible for rendering the leaderboard
+ * and managing search functionality.
+ */
 public class LeaderBoardFragment extends Fragment {
 
     SearchView searchView;
@@ -90,7 +94,13 @@ public class LeaderBoardFragment extends Fragment {
 
         return view;
     }
-
+    /**
+     * Filters the leaderboard data based on the provided search query.
+     * This method searches the player list for player names that contain the provided query string
+     *If the query is empty, the method displays the full player list. If the query
+     * is non-empty, the method displays only the players whose names match the query.
+     * @param query The search query string used to filter player names. If empty, the entire player list is displayed.
+     */
     private void filterLeaderboardData(String query) {
         if (query.isEmpty()) {
             PlayerAdapter playerAdapter = new PlayerAdapter(LeaderBoardFragment.this, arrayList);
@@ -106,7 +116,13 @@ public class LeaderBoardFragment extends Fragment {
             recyclerView.setAdapter(playerAdapter);
         }
     }
-
+    /**
+     * Loads and displays the leaderboard data.
+     * This method retrieves the user profiles from the user database manager and sorts them
+     * in descending order based on their total scores. Then, it creates a
+     * object for each user profile, sets the player name, points, and rank, and adds them to the
+     * leaderboard array list.
+     */
     private void loadLeaderboardData() {
         userDBManager userDbManager = new userDBManager(requireContext());
         userDbManager.getUsers(new userDBManager.OnUsersLoadedListener() {

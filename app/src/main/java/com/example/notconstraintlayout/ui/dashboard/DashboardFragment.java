@@ -260,6 +260,11 @@ public class DashboardFragment extends Fragment implements userDBManager.OnUserD
 
     private static final int PERMISSION_REQUEST_CAMERA = 2;
 
+    /**
+     * This functionn opens the device's camera to capture an image using the built-in camera app.
+     * This method checks for camera permission and requests it if not granted. If the permission is granted,
+     * it launches the camera application,and starts the activity
+     */
     public void openCameraToTakePicture() {
         if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(requireActivity(), new String[]{Manifest.permission.CAMERA}, PERMISSION_REQUEST_CAMERA);
@@ -427,7 +432,11 @@ public class DashboardFragment extends Fragment implements userDBManager.OnUserD
         super.onDestroyView();
         binding = null;
     }
-
+    /**
+     * The function Launches the QR code scanning activity using the barCodeLauncher
+     * This method initializes ScanOptions object with custom settings, such as displaying a prompt,
+     * enabling beep sound, and setting a custom capture activity for scanning the QR code.
+     */
     public void showEditProfileDialog() {
         LayoutInflater inflater = getLayoutInflater();
         View dialogView = inflater.inflate(R.layout.edit_profile_dialog, null);
@@ -491,6 +500,11 @@ public class DashboardFragment extends Fragment implements userDBManager.OnUserD
         return false;
     }
 
+    /**
+     * Initiates a QR code scanning process using the provided options.
+     * This method sets up the necessary options, launches the scanning activity,
+     * and handles the result using the activity result launcher.
+     */
     public void scanQrCode() {
         ScanOptions options = new ScanOptions();
         options.setPrompt("Please Scan the code");
@@ -512,7 +526,14 @@ public class DashboardFragment extends Fragment implements userDBManager.OnUserD
             }
         }
     }
-
+    /**
+     * This method calculates the SHA-256 hash of the given {Value} and identifies
+     * repeated hexadecimal digit sequences in the hash. It then calculates a score based
+     * on the length and value of the repeated hexadecimal sequences.
+     *
+     * @param Value the input string to be hashed and scored
+     * @return the computed score based on repeated digit sequences in the SHA-256 hash
+     */
     private int computeScore(String Value) {
         // Calculate SHA-256 hash of the QR Value contents
         String sha256 = "";   // This variable will be used to store the SHA-256 hash value
@@ -548,11 +569,19 @@ public class DashboardFragment extends Fragment implements userDBManager.OnUserD
         return score;
     }
 
-    // takes an array of bytes as input and returns a string in hexadecimal format
+    /**
+     * Converts an array of bytes to a hexadecimal string representation.
+     * This method iterates through the input byte array and converts each byte to a
+     * two-digit hexadecimal string, appending the resulting strings to form a single
+     * hexadecimal string.
+     *
+     * @param bytes the byte array to be converted to a hexadecimal string
+     * @return the hexadecimal string representation of the input byte array
+     */
     private String bytesToHex(byte[] bytes) {
         StringBuilder hex = new StringBuilder();
         for (byte b : bytes) {
-            hex.append(String.format("%02x", b)); // converts the current byte to a two-digit hexadecimal string [The String should have minimum length of 2 characters]
+            hex.append(String.format("%02x", b));
         }
         return hex.toString();
     }
@@ -582,6 +611,14 @@ public class DashboardFragment extends Fragment implements userDBManager.OnUserD
         }
         return hashNameBuilder.toString();
     }
+    /**
+     * Generates a text-based face representation using the provided QR code string.
+     * The face is created by selecting different face parts based on the hashCode() of the code,
+     * ensuring that similar strings produce different faces. The generated face consists of
+     * eyes, eyebrows, pupils, noses, mouths, and face shapes.
+     * @param code the QR code string used to generate the text-based face
+     * @return a String containing the generated text-based face representation
+     */
     private String generateTextFace(String code) {
         // Define the character sets for different face parts
         String[] eyes = {"o", "O", "0", "x", "-", ">", "<", "(", ")", "8"};

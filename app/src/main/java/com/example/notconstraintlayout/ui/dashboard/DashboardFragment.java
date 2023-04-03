@@ -181,13 +181,14 @@ public class DashboardFragment extends Fragment implements userDBManager.OnUserD
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 // Show a dialog with options to delete or cancel
+                QrClass qrCodeToDelete = mQrCodes.get(position);
                 new AlertDialog.Builder(requireContext())
-
-                        .setMessage("Name: "+name+ "\nScore: "+score)
+                        .setMessage("Name: "+qrCodeToDelete.getName()+ "\nScore: "+qrCodeToDelete.getPoints() + "\nScanned by " +qrCodeToDelete.getScannedBy() + " others" + "\n" + qrCodeToDelete.getLocation_image())
                         .setPositiveButton("Delete", new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
                                 // Delete the selected QR code and update the list
-                                QrClass qrCodeToDelete = mQrCodes.get(position);
+
+
                                 userDBManager.removeQrCode(qrCodeToDelete, new userDBManager.OnQrCodeRemovedListener() {
                                     @Override
                                     public void onQrCodeRemoved() {
@@ -204,7 +205,26 @@ public class DashboardFragment extends Fragment implements userDBManager.OnUserD
                             }
                         })
                         .setNegativeButton("Cancel", null)
+                        .setNeutralButton("Comment", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                Context context = getActivity();
+                                LayoutInflater inflater = LayoutInflater.from(context);
+                                View commentView = inflater.inflate(R.layout.fragment_comment_page, null);
 
+                                ListView commentList = commentView.findViewById(R.id.Comment_list);
+                                EditText addComment = commentView.findViewById(R.id.Add_comment);
+                                Button sendButton = commentView.findViewById(R.id.button_send);
+
+                                // You can set up an adapter for the ListView and set OnClickListener for the send button here.
+                                AlertDialog.Builder commentDialog = new AlertDialog.Builder(context);
+                                commentDialog.setView(commentView)
+                                        .setTitle("Add Comment")
+                                        .setNegativeButton("Cancel", null)
+                                        .create()
+                                        .show();
+                            }
+                        })
                         .show();
             }
         });

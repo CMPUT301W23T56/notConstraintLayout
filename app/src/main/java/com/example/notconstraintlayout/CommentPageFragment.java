@@ -39,7 +39,6 @@ public class CommentPageFragment extends Fragment {
     }
 
 
-
     public static CommentPageFragment newInstance(String param1, String param2) {
         CommentPageFragment fragment = new CommentPageFragment();
         Bundle args = new Bundle();
@@ -57,32 +56,31 @@ public class CommentPageFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        View view = inflater.inflate(R.layout.fragment_comment_page,container,false);
+        View view = inflater.inflate(R.layout.fragment_comment_page, container, false);
 
-        commentField = getView().findViewById(R.id.field_commentEntry);
-        newComment  = getView().findViewById(R.id.Add_comment);
-        commentList = getView().findViewById(R.id.Comment_list);
+        commentField = view.findViewById(R.id.field_commentEntry);
+        newComment = view.findViewById(R.id.Add_comment);
+        commentList = view.findViewById(R.id.Comment_list);
 
         dataList = new ArrayList<>();
 
-
-        //CommentPageAdapter commentPageAdapter = new commentPageAdapter (CommentPageFragment.this, dataList);
-
-
+        // Set up the ArrayAdapter
+        commentAdapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, dataList);
         commentList.setAdapter(commentAdapter);
 
-        final Button confirmButton = getView().findViewById(R.id.button_send);
+        final Button confirmButton = view.findViewById(R.id.button_send);
 
         confirmButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                String cityName = newComment.getText().toString();
-                commentAdapter.add(cityName);
-                newComment.getText().clear();
-                commentField.setVisibility(View.INVISIBLE);
+                String commentText = newComment.getText().toString();
+                if (!commentText.isEmpty()) {
+                    commentAdapter.add(commentText);
+                    newComment.getText().clear();
+                    commentField.setVisibility(View.INVISIBLE);
+                }
             }
         });
 
         return view;
-
     }
 }

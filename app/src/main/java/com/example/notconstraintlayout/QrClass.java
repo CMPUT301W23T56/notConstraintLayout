@@ -16,6 +16,8 @@ public class QrClass {
     private Bitmap location_image;
 
     private int scannedBy = 0;
+    private String id;
+
 
 
     public QrClass(String hash) {

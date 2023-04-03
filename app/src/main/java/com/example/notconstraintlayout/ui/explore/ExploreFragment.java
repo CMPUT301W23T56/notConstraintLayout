@@ -24,8 +24,14 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.notconstraintlayout.QrClass;
+import com.example.notconstraintlayout.QrCodeDBManager;
 import com.example.notconstraintlayout.R;
+import com.example.notconstraintlayout.UserProfile;
 import com.example.notconstraintlayout.databinding.FragmentExploreBinding;
+import com.example.notconstraintlayout.ui.leaderboard.LeaderBoardFragment;
+import com.example.notconstraintlayout.ui.leaderboard.PlayerAdapter;
+import com.example.notconstraintlayout.ui.leaderboard.PlayerListClass;
+import com.example.notconstraintlayout.userDBManager;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -38,6 +44,8 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import io.ghyeok.stickyswitch.widget.StickySwitch;
@@ -46,8 +54,6 @@ public class ExploreFragment extends Fragment implements OnMapReadyCallback, Loc
 
     private FragmentExploreBinding binding;
     private GoogleMap mMap;
-    private View mapView;
-    private View listView;
     private RecyclerView recyclerView;
 
     private List<QrClass> qrArray = new ArrayList<>();
@@ -65,19 +71,26 @@ public class ExploreFragment extends Fragment implements OnMapReadyCallback, Loc
         binding = FragmentExploreBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
 
-        StickySwitch stickySwitch = root.findViewById(R.id.sticky_switch);
-        mapView = inflater.inflate(R.layout.explore_map, container, false);
-        listView = root.findViewById(R.id.explore_list);
+        QrCodeDBManager qrDb = new QrCodeDBManager();
+        qrDb.displayQrCodes(new QrCodeDBManager.OnUsersLoadedListener() {
+            @Override
+            public void onUsersLoaded(List<QrClass> qrClassList) {
 
+                for (QrClass qrClass : qrClassList) {
+                    qrArray.add(qrClass);
+                }
+                QrListAdapter adapter = new QrListAdapter(qrArray, userLocation);
+                recyclerView.setAdapter(adapter);
+            }
+        });
+
+        binding.exploreList.setVisibility(View.VISIBLE);
+        binding.map.setVisibility(View.GONE);
+
+        StickySwitch stickySwitch = root.findViewById(R.id.sticky_switch);
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
-
-        qrArray.add(new QrClass("cool FroMoMegaSpectralCrab", new LatLng(53.517793, -113.513926), 100));
-        qrArray.add(new QrClass("cool FroMoMegaSpectralCrab", new LatLng(53.520796, -113.505105), 200));
-        qrArray.add(new QrClass("cool FroLoUltraSpectralCrab", new LatLng(53.525067, -113.526767), 300));
-        qrArray.add(new QrClass("hot GloLoUltraSpectralShark", new LatLng(53.521092, -113.530964), 400));
-
 
         stickySwitch.setOnSelectedChangeListener(new StickySwitch.OnSelectedChangeListener() {
             @Override
@@ -85,18 +98,12 @@ public class ExploreFragment extends Fragment implements OnMapReadyCallback, Loc
                 Log.d(TAG, "Now Selected : " + direction.name() + ", Current Text : " + text);
                 if (direction == StickySwitch.Direction.LEFT) {
                     // Show list view and hide map view
-                    listView.setVisibility(View.VISIBLE);
-                    mapView.setVisibility(View.GONE);
-
-                    // Remove map view from view hierarchy
-                    ((ViewGroup) mapView.getParent()).removeView(mapView);
+                    binding.exploreList.setVisibility(View.VISIBLE);
+                    binding.map.setVisibility(View.GONE);
                 } else {
                     // Show map view and hide list view
-                    mapView.setVisibility(View.VISIBLE);
-                    listView.setVisibility(View.GONE);
-
-                    // Add map view to view hierarchy
-                    ((ViewGroup) getView()).addView(mapView);
+                    binding.map.setVisibility(View.VISIBLE);
+                    binding.exploreList.setVisibility(View.GONE);
                 }
             }
         });
@@ -130,11 +137,9 @@ public class ExploreFragment extends Fragment implements OnMapReadyCallback, Loc
         recyclerView = root.findViewById(R.id.explore_list);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        QrListAdapter adapter = new QrListAdapter(qrArray, userLocation);
-        recyclerView.setAdapter(adapter);
-
         return root;
     }
+
 
     @Override
     public void onResume() {

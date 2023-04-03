@@ -4,7 +4,9 @@ import static android.app.Activity.RESULT_OK;
 import static android.content.ContentValues.TAG;
 
 import android.Manifest;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -16,6 +18,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -30,10 +33,13 @@ import androidx.fragment.app.Fragment;
 import com.example.notconstraintlayout.CaptureAct;
 import com.example.notconstraintlayout.QrClass;
 import com.example.notconstraintlayout.QrCodeAdapter;
+import com.example.notconstraintlayout.QrCodeDBManager;
 import com.example.notconstraintlayout.R;
 import com.example.notconstraintlayout.UserProfile;
 import com.example.notconstraintlayout.databinding.FragmentDashboardBinding;
 import com.example.notconstraintlayout.userDBManager;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.journeyapps.barcodescanner.ScanContract;
@@ -42,13 +48,15 @@ import com.journeyapps.barcodescanner.ScanOptions;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 
 
-public class DashboardFragment extends Fragment implements DeleteQRFragment.DeleteQRDialogListener {
+public class DashboardFragment extends Fragment implements userDBManager.OnUserDocumentUpdatedListener {
 
     private FragmentDashboardBinding binding;
     private ListView mListView;
@@ -56,88 +64,26 @@ public class DashboardFragment extends Fragment implements DeleteQRFragment.Dele
     private ArrayList<QrClass> mQrCodes = new ArrayList<>();
     private static final int REQUEST_CODE_QR_SCAN = 0;
     private static final int REQUEST_IMAGE_CAPTURE = 1;
-    private ListView dashboardlist;
+    public String name;
+    public int score;
 
     FloatingActionButton scan_button;
 
     private List<String> scannedCodes;
 
+    private TextView scoreTextView;
+    private TextView scannedTextView;
+
+    private TextView textView;
     ActivityResultLauncher<ScanOptions> barCodeLauncher;
-
-    public DashboardFragment() {
-    }
-
-    public View onCreateView(@NonNull LayoutInflater inflater,
-                             ViewGroup container, Bundle savedInstanceState) {
-        binding = FragmentDashboardBinding.inflate(inflater, container, false);
-        View root = binding.getRoot();
-        final TextView textView = binding.username;
-        final TextView scoreTextView = binding.Scorevalue;
-        final TextView scannedTextView = binding.Scannedvalue;
-        mListView = binding.dashboardlist;
-        mAdapter = new QrCodeAdapter(requireContext(), mQrCodes);
-        mListView.setAdapter(mAdapter);
-
-        userDBManager userDBManager = new userDBManager(requireContext());
-        userDBManager.getUserProfile(new userDBManager.OnUserProfileLoadedListener() {
-            @Override
-            public void onUserProfileLoaded(UserProfile userProfile) {
-                if (userProfile != null) {
-                    String username = userProfile.getUsername();
-                    textView.setText(username);
-                    scoreTextView.setText(String.valueOf(userProfile.getTotalScore()));
-                    scannedTextView.setText(String.valueOf(userProfile.getTotalScanned()));
-                    mQrCodes.clear();
-                    mQrCodes.addAll(userProfile.getScannedQrCodes());
-                    mAdapter.notifyDataSetChanged();
-                } else {
-                    Log.d(TAG, "Failed to load user profile.");
-                }
-            }
-        });
-
-
-        mListView.setOnItemClickListener(((adapterView, view, i, l) -> {
-            QrClass dashboardlist = mQrCodes.get(i);
-            new DeleteQRFragment(dashboardlist).show(getChildFragmentManager(), "Delete QR");
-//            mQrCodes.remove(mQrCodes);
-//            mAdapter.notifyDataSetChanged();
-
-        }));
-
-
-        binding.myFab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                scanQrCode();
-            }
-        });
-        return root;
-    }
-
-
-
-
-
-    private static final int PERMISSION_REQUEST_CAMERA = 2;
-
-    public void openCameraToTakePicture() {
-        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(requireActivity(), new String[]{Manifest.permission.CAMERA}, PERMISSION_REQUEST_CAMERA);
-        } else {
-            Log.d("Camera", "Opening camera");
-            Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-            if (takePictureIntent.resolveActivity(requireActivity().getPackageManager()) != null) {
-                startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
-            }
-        }
-    }
-
-    @Override
+    public QrCodeDBManager qrDb;
+    public int scannedBy = 0;
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
 
         userDBManager userManager = new userDBManager(requireContext());
+        QrCodeDBManager qrDb = new QrCodeDBManager();
+
 
         ScanOptions options = new ScanOptions();
         options.setPrompt("Please Scan the code");
@@ -146,9 +92,23 @@ public class DashboardFragment extends Fragment implements DeleteQRFragment.Dele
 
         barCodeLauncher = registerForActivityResult(new ScanContract(), result -> {
             if (result.getContents() != null) {
-                String name = calculateName(result.getContents());
-                int score = computeScore(result.getContents());
-                QrClass qrClass = new QrClass(name, score);
+                name = calculateName(result.getContents());
+                score = computeScore(result.getContents());
+
+                QrClass qrClass = new QrClass(name, score, String.valueOf(result.getContents().hashCode()));
+
+
+                qrDb.saveQRCodes(qrClass, new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        if (task.isSuccessful()) {
+                            Log.d(TAG, "QR code saved to Firestore.");
+                        } else {
+                            Log.w(TAG, "Error saving QR code to Firestore.", task.getException());
+                        }
+                    }
+                });
+
                 userManager.addQrCode(qrClass, new userDBManager.OnQrCodeAddedListener() {
                     @Override
                     public void onQrCodeAdded() {
@@ -184,24 +144,188 @@ public class DashboardFragment extends Fragment implements DeleteQRFragment.Dele
             }
         });
     }
-//        barCodeLauncher = registerForActivityResult(new ScanContract(), result -> {
-//            // Show the result of scanned QR code in the text
-//            if (result.getContents() != null) {
-//                String name = calculateName(result.getContents());
-//                int score = computeScore(result.getContents());
-//                new androidx.appcompat.app.AlertDialog.Builder(getContext())
-//                        .setTitle("Score and Name")
-//                        .setMessage("Your score is: " + score + "\nYour Name is: " + name)
-//                        .setPositiveButton(android.R.string.ok, null)
-//                        .show(); // Show alertDialogue box to the user
-//            }
-//        });
+
+    public View onCreateView(@NonNull LayoutInflater inflater,
+                             ViewGroup container, Bundle savedInstanceState) {
+        binding = FragmentDashboardBinding.inflate(inflater, container, false);
+        View root = binding.getRoot();
+        textView = binding.username;
+        scoreTextView = binding.Scorevalue;
+        scannedTextView = binding.Scannedvalue;
+
+        mListView = binding.dashboardlist;
+        mAdapter = new QrCodeAdapter(requireContext(), mQrCodes);
+        mListView.setAdapter(mAdapter);
+
+        userDBManager userDBManager = new userDBManager(requireContext());
+        userDBManager.addUserDocumentListener(this);
+        userDBManager.getUserProfile(new userDBManager.OnUserProfileLoadedListener() {
+            @Override
+            public void onUserProfileLoaded(UserProfile userProfile) {
+                if (userProfile != null) {
+                    String username = userProfile.getUsername();
+                    textView.setText(username);
+                    scoreTextView.setText(String.valueOf(userProfile.getTotalScore()));
+                    scannedTextView.setText(String.valueOf(userProfile.getTotalScanned()));
+                    mQrCodes.clear();
+                    mQrCodes.addAll(userProfile.getScannedQrCodes());
+                    mAdapter.notifyDataSetChanged();
+                } else {
+                    Log.d(TAG, "Failed to load user profile.");
+                }
+            }
+        });
+        mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
+
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                // Show a dialog with options to delete or cancel
+                new AlertDialog.Builder(requireContext())
+
+                        .setMessage("Name: "+name+ "\nScore: "+score)
+                        .setPositiveButton("Delete", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                // Delete the selected QR code and update the list
+                                QrClass qrCodeToDelete = mQrCodes.get(position);
+                                userDBManager.removeQrCode(qrCodeToDelete, new userDBManager.OnQrCodeRemovedListener() {
+                                    @Override
+                                    public void onQrCodeRemoved() {
+                                        Log.d(TAG, "QR code removed.");
+                                    }
+                                }, new userDBManager.OnQrCodesChangedListener() {
+                                    @Override
+                                    public void onQrCodesChanged(List<QrClass> qrCodes) {
+                                        mQrCodes.clear();
+                                        mQrCodes.addAll(qrCodes);
+                                        mAdapter.notifyDataSetChanged();
+                                    }
+                                });
+                            }
+                        })
+                        .setNegativeButton("Cancel", null)
+
+                        .show();
+            }
+        });
+
+
+        binding.sort.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Collections.sort(mQrCodes, new Comparator<QrClass>() {
+                    @Override
+                    public int compare(QrClass o1, QrClass o2) {
+                        return o2.getPoints() - o1.getPoints();
+                    }
+                });
+                mAdapter.notifyDataSetChanged();
+            }
+        });
+
+        binding.edit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showEditProfileDialog();
+            }
+        });
+
+        binding.myFab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                scanQrCode();
+            }
+        });
+        return root;
+    }
+
+    @Override
+    public void onUserDocumentUpdated(UserProfile userProfile) {
+        if (userProfile != null) {
+            // Update the UI with the new values for Total Score and Total Scanned
+            if (scoreTextView != null) {
+                scoreTextView.setText(String.valueOf(userProfile.getTotalScore()));
+            }
+            if (scannedTextView != null) {
+                scannedTextView.setText(String.valueOf(userProfile.getTotalScanned()));
+            }
+        }
+    }
+
+    private static final int PERMISSION_REQUEST_CAMERA = 2;
+
+    public void openCameraToTakePicture() {
+        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(requireActivity(), new String[]{Manifest.permission.CAMERA}, PERMISSION_REQUEST_CAMERA);
+        } else {
+            Log.d("Camera", "Opening camera");
+            Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+            if (takePictureIntent.resolveActivity(requireActivity().getPackageManager()) != null) {
+                startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
+            }
+        }
+    }
+
 
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
         binding = null;
+    }
+
+    public void showEditProfileDialog() {
+        LayoutInflater inflater = getLayoutInflater();
+        View dialogView = inflater.inflate(R.layout.edit_profile_dialog, null);
+        userDBManager userManager = new userDBManager(requireContext());
+
+
+        EditText editUsername = dialogView.findViewById(R.id.edit_username);
+        EditText editPhoneNumber = dialogView.findViewById(R.id.edit_phone_number);
+        Button updateButton = dialogView.findViewById(R.id.button_update);
+
+        // Get the current user's information
+        userManager.getUserProfile(new userDBManager.OnUserProfileLoadedListener() {
+            @Override
+            public void onUserProfileLoaded(UserProfile userProfile) {
+                if (userProfile != null) {
+                    editUsername.setText(userProfile.getUsername());
+                    editPhoneNumber.setText(Long.toString(userProfile.getContactInfo()));
+                } else {
+                    Log.d(TAG, "Failed to load user profile.");
+                }
+            }
+        });
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
+        builder.setView(dialogView)
+                .setTitle("Edit Profile");
+        final AlertDialog dialog = builder.create();
+        updateButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // Get the updated information from the EditText fields
+                String newUsername = editUsername.getText().toString();
+                String newPhoneNumber = editPhoneNumber.getText().toString();
+
+                // Update the user's information in the database
+                userManager.updateProfile(newUsername, newPhoneNumber, new userDBManager.OnUserProfileUpdatedListener() {
+                    @Override
+                    public void onUserProfileUpdated(UserProfile userProfile) {
+                        if (userProfile != null) {
+                            // Update the UI with the new information
+                            textView.setText(userProfile.getUsername());
+                            scoreTextView.setText(String.valueOf(userProfile.getTotalScore()));
+                            scannedTextView.setText(String.valueOf(userProfile.getTotalScanned()));
+                        } else {
+                            Log.d(TAG, "Failed to update user profile.");
+                        }
+                    }
+                });
+                dialog.dismiss();
+            }
+        });
+        dialog.show();
     }
 
     public void scanQrCode() {
@@ -308,13 +432,5 @@ public class DashboardFragment extends Fragment implements DeleteQRFragment.Dele
             hashNameBuilder.append(bits[i]);
         }
         return hashNameBuilder.toString();
-    }
-
-
-    @Override
-    public void deleteQr(QrClass qrClass){
-        mQrCodes.remove(mQrCodes);
-        mAdapter.notifyDataSetChanged();
-
     }
 }

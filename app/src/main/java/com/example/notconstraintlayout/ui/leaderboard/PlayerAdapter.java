@@ -37,6 +37,7 @@ public class PlayerAdapter extends RecyclerView.Adapter<PlayerAdapter.MyHolder> 
 
         holder.playerName.setText(arrayList.get(position).getPlayerName());
         holder.playerPoint.setText(arrayList.get(position).getPlayerPoint());
+        holder.playerRank.setText(Integer.toString(arrayList.get(position).getPlayerRank()));
 
     }
 
@@ -46,11 +47,12 @@ public class PlayerAdapter extends RecyclerView.Adapter<PlayerAdapter.MyHolder> 
     }
 
     public class MyHolder extends RecyclerView.ViewHolder {
-        TextView playerName,playerPoint;
+        TextView playerName,playerPoint,playerRank;
         public MyHolder(@NonNull View itemView) {
             super(itemView);
-            playerName = itemView.findViewById(R.id.txt);
-            playerPoint = itemView.findViewById(R.id.txt2);
+            playerName = itemView.findViewById(R.id.player_name);
+            playerPoint = itemView.findViewById(R.id.player_points);
+            playerRank = itemView.findViewById(R.id.rank);
 
         }
     }

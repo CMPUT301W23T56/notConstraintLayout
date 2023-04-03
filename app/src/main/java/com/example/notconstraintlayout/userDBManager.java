@@ -5,9 +5,14 @@ import static android.content.ContentValues.TAG;
 import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.FragmentActivity;
+import androidx.navigation.fragment.NavHostFragment;
 
+import com.example.notconstraintlayout.ui.dashboard.DashboardFragment;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -16,8 +21,13 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.QuerySnapshot;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
@@ -90,28 +100,61 @@ public class userDBManager {
         }
     }
 
-    public void updateProfile(UserProfile userProfile, OnQrCodeAddedListener listener) {
-        DocumentReference userDocRef = db.collection("Profiles").document(userId);
-        userDocRef.set(userProfile).addOnCompleteListener(task -> {
-            if (task.isSuccessful()) {
-                Log.d(TAG, "User profile updated.");
-                listener.onQrCodeAdded();
-            } else {
-                Log.d(TAG, "User profile update failed.");
-            }
-        });
-    }
-
-    public void addQrCode(QrClass qrCode, OnQrCodeAddedListener listener, OnQrCodesChangedListener qrCodesChangedListener) {
+    public void updateProfile(String newUsername, String newPhoneNumber, OnUserProfileUpdatedListener listener) {
         getUserProfile(new OnUserProfileLoadedListener() {
             @Override
             public void onUserProfileLoaded(UserProfile userProfile) {
                 if (userProfile != null) {
-                    userProfile.addQrCode(qrCode);
-                    userProfile.setTotalScanned(userProfile.getTotalScanned()+1);
-                    userProfile.setTotalScore(userProfile.getTotalScore()+qrCode.getPoints());
+                    userProfile.setUsername(newUsername);
+                    userProfile.setContactInfo(Long.parseLong(newPhoneNumber));
                     saveUserProfile(userProfile);
-                    listener.onQrCodeAdded();
+
+                    if (listener != null) {
+                        listener.onUserProfileUpdated(userProfile);
+                    }
+                } else {
+                    Log.d(TAG, "Failed to load user profile.");
+
+                    if (listener != null) {
+                        listener.onUserProfileUpdated(null);
+                    }
+                }
+            }
+        });
+    }
+
+    public void getUsers(final OnUsersLoadedListener listener) {
+        db.collection("Profiles").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                if (task.isSuccessful()) {
+                    List<UserProfile> userProfiles = new ArrayList<>();
+                    for (DocumentSnapshot document : task.getResult()) {
+                        UserProfile userProfile = document.toObject(UserProfile.class);
+                        userProfiles.add(userProfile);
+                    }
+                    listener.onUsersLoaded(userProfiles);
+                } else {
+                    Log.d(TAG, "Error getting documents: ", task.getException());
+                    listener.onUsersLoaded(Collections.emptyList());
+                }
+            }
+        });
+    }
+
+    public interface OnUsersLoadedListener {
+        void onUsersLoaded(List<UserProfile> userProfiles);
+    }
+    public void removeQrCode(QrClass qrCodeToRemove, OnQrCodeRemovedListener removedListener, OnQrCodesChangedListener qrCodesChangedListener) {
+        getUserProfile(new OnUserProfileLoadedListener() {
+            @Override
+            public void onUserProfileLoaded(UserProfile userProfile) {
+                if (userProfile != null) {
+                    userProfile.removeQrCode(qrCodeToRemove);
+                    userProfile.setTotalScanned(userProfile.getTotalScanned() - 1);
+                    userProfile.setTotalScore(userProfile.getTotalScore() - qrCodeToRemove.getPoints());
+                    saveUserProfile(userProfile);
+                    removedListener.onQrCodeRemoved();
                     qrCodesChangedListener.onQrCodesChanged(userProfile.getScannedQrCodes());
                 } else {
                     Log.d(TAG, "Failed to load user profile.");
@@ -120,7 +163,74 @@ public class userDBManager {
         });
     }
 
+    public interface OnQrCodeRemovedListener {
+        void onQrCodeRemoved();
+    }
 
+
+    public void addQrCode(QrClass qrCode, OnQrCodeAddedListener listener, OnQrCodesChangedListener qrCodesChangedListener) {
+        getUserProfile(new OnUserProfileLoadedListener() {
+            @Override
+            public void onUserProfileLoaded(UserProfile userProfile) {
+                if (userProfile != null) {
+                    userProfile.addQrCode(qrCode);
+                    userProfile.setTotalScanned(userProfile.getTotalScanned() + 1);
+                    userProfile.setTotalScore(userProfile.getTotalScore() + qrCode.getPoints());
+                    saveUserProfile(userProfile);
+                    listener.onQrCodeAdded();
+                    qrCodesChangedListener.onQrCodesChanged(userProfile.getScannedQrCodes());
+
+                    // Update the UI immediately
+                    NavHostFragment navHostFragment = (NavHostFragment) ((FragmentActivity) context).getSupportFragmentManager().findFragmentById(R.id.nav_host_fragment_activity_main);
+                    DashboardFragment fragment = (DashboardFragment) navHostFragment.getChildFragmentManager().getFragments().get(0);
+                    if (fragment != null) {
+                        fragment.getActivity().runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                TextView scoreTextView = fragment.getView().findViewById(R.id.Scorevalue);
+                                TextView scannedTextView = fragment.getView().findViewById(R.id.Scannedvalue);
+                                scoreTextView.setText(String.valueOf(userProfile.getTotalScore()));
+                                scannedTextView.setText(String.valueOf(userProfile.getTotalScanned()));
+                            }
+                        });
+                    }
+                } else {
+                    Log.d(TAG, "Failed to load user profile.");
+                }
+            }
+        });
+    }
+
+
+    public void addUserDocumentListener(final OnUserDocumentUpdatedListener listener) {
+        if (userDocRef != null) {
+            userDocRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
+                @Override
+                public void onEvent(@Nullable DocumentSnapshot snapshot,
+                                    @Nullable FirebaseFirestoreException e) {
+                    if (e != null) {
+                        Log.w(TAG, "Listen failed.", e);
+                        return;
+                    }
+
+                    if (snapshot != null && snapshot.exists()) {
+                        UserProfile userProfile = snapshot.toObject(UserProfile.class);
+                        listener.onUserDocumentUpdated(userProfile);
+                    } else {
+                        Log.d(TAG, "Current data: null");
+                    }
+                }
+            });
+        } else {
+            Log.d(TAG, "User document reference is null.");
+            listener.onUserDocumentUpdated(null);
+        }
+    }
+
+
+    public interface OnUserDocumentUpdatedListener {
+        void onUserDocumentUpdated(UserProfile userProfile);
+    }
     public interface OnUserProfileLoadedListener {
         void onUserProfileLoaded(UserProfile userProfile);
     }
@@ -132,5 +242,12 @@ public class userDBManager {
     public interface OnQrCodesChangedListener {
         void onQrCodesChanged(List<QrClass> qrCodes);
     }
+    public interface OnAllUserProfilesLoadedListener {
+        void onAllUserProfilesLoaded(ArrayList<UserProfile> userProfiles);
+    }
+    public interface OnUserProfileUpdatedListener {
+        void onUserProfileUpdated(UserProfile userProfile);
+    }
+
 
 }

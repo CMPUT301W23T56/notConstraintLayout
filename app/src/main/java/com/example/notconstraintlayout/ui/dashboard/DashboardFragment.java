@@ -21,6 +21,7 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -76,6 +77,7 @@ public class DashboardFragment extends Fragment implements userDBManager.OnUserD
     private static final int REQUEST_IMAGE_CAPTURE = 1;
     public String name;
     public int score;
+    public String face;
 
     FloatingActionButton scan_button;
 
@@ -91,6 +93,9 @@ public class DashboardFragment extends Fragment implements userDBManager.OnUserD
     QrClass qrClass;
 
     public int scannedBy = 0;
+    private String currentPhotoPath;
+    private StorageReference storageRef;
+    Bitmap img;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -100,9 +105,15 @@ public class DashboardFragment extends Fragment implements userDBManager.OnUserD
         scoreTextView = binding.Scorevalue;
         scannedTextView = binding.Scannedvalue;
 
+        storage = FirebaseStorage.getInstance();
+        storageRef = storage.getReference();
+
         mListView = binding.dashboardlist;
         mAdapter = new QrCodeAdapter(requireContext(), mQrCodes);
         mListView.setAdapter(mAdapter);
+        if (savedInstanceState != null) {
+            currentPhotoPath = savedInstanceState.getString("currentPhotoPath");
+        }
 
         userDBManager userDBManager = new userDBManager(requireContext());
         userDBManager.addUserDocumentListener(this);
@@ -127,10 +138,23 @@ public class DashboardFragment extends Fragment implements userDBManager.OnUserD
 
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                // Show a dialog with options to delete or cancel
-                new AlertDialog.Builder(requireContext())
+                QrClass qrCodeToDelete = mQrCodes.get(position);
 
-                        .setMessage("Name: "+name+ "\nScore: "+score)
+                // Inflate the custom dialog layout
+                LayoutInflater inflater = LayoutInflater.from(requireContext());
+                View dialogView = inflater.inflate(R.layout.qr_code_details_dialog, null);
+
+                // Get the ImageView and set the image
+                ImageView locationImageView = dialogView.findViewById(R.id.location_image_view);
+                Bitmap locationImage = qrCodeToDelete.getLocation_image();
+                if (locationImage != null) {
+                    locationImageView.setImageBitmap(locationImage);
+                }
+
+
+                // Create and show the AlertDialog
+                new AlertDialog.Builder(requireContext())
+                        .setMessage("Name: " + qrCodeToDelete.getName() + "\nScore: " + qrCodeToDelete.getPoints() + "\nScanned by " + qrCodeToDelete.getScannedBy() + " others" + "\n" + qrCodeToDelete.getFace())
                         .setPositiveButton("Delete", new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
                                 // Delete the selected QR code and update the list
@@ -151,21 +175,48 @@ public class DashboardFragment extends Fragment implements userDBManager.OnUserD
                             }
                         })
                         .setNegativeButton("Cancel", null)
+                        .setNeutralButton("Comment", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                Context context = getActivity();
+                                LayoutInflater inflater = LayoutInflater.from(context);
+                                View commentView = inflater.inflate(R.layout.fragment_comment_page, null);
 
+                                ListView commentList = commentView.findViewById(R.id.Comment_list);
+                                EditText addComment = commentView.findViewById(R.id.Add_comment);
+                                Button sendButton = commentView.findViewById(R.id.button_send);
+
+                                // You can set up an adapter for the ListView and set OnClickListener for the send button here.
+                                AlertDialog.Builder commentDialog = new AlertDialog.Builder(context);
+                                commentDialog.setView(commentView)
+                                        .setTitle("Add Comment")
+                                        .setNegativeButton("Cancel", null)
+                                        .create()
+                                        .show();
+                            }
+                        })
+                        .setView(dialogView)
                         .show();
             }
         });
 
 
         binding.sort.setOnClickListener(new View.OnClickListener() {
+            private boolean isDescending = true;
+
             @Override
             public void onClick(View v) {
                 Collections.sort(mQrCodes, new Comparator<QrClass>() {
                     @Override
                     public int compare(QrClass o1, QrClass o2) {
-                        return o2.getPoints() - o1.getPoints();
+                        if (isDescending) {
+                            return o2.getPoints() - o1.getPoints();
+                        } else {
+                            return o1.getPoints() - o2.getPoints();
+                        }
                     }
                 });
+                isDescending = !isDescending;
                 mAdapter.notifyDataSetChanged();
             }
         });
@@ -200,7 +251,6 @@ public class DashboardFragment extends Fragment implements userDBManager.OnUserD
     }
 
     private static final int PERMISSION_REQUEST_CAMERA = 2;
-
     public void openCameraToTakePicture() {
         if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(requireActivity(), new String[]{Manifest.permission.CAMERA}, PERMISSION_REQUEST_CAMERA);
@@ -521,5 +571,40 @@ public class DashboardFragment extends Fragment implements userDBManager.OnUserD
             hashNameBuilder.append(bits[i]);
         }
         return hashNameBuilder.toString();
+    }
+    private String generateTextFace(String code) {
+        // Define the character sets for different face parts
+        String[] eyes = {"o", "O", "0", "x", "-", ">", "<", "(", ")", "8"};
+        String[] eyebrows = {"^", "-", ">", "<", "v", "W"};
+        String[] pupils = {"*", ".", "o", "O", "0", "x"};
+        String[] noses = {"-", "~", "v", "^", "o", "O", "0", "S"};
+        String[] mouths = {"u", "U", "(", ")", "W", "V", "[", "]", "{", "}", "/", "\\"};
+        String[] faceShapes = {"O", "0", "C", "(", ")", "D", "P", "Q", "B", "@"};
+
+        // Use the hashCode() of the QR code to ensure that similar strings produce different faces
+        int hash = code.hashCode();
+
+        // Use parts of the hash to select face parts
+        int eyesIndex = Math.abs(hash) % eyes.length;
+        int eyebrowsIndex = Math.abs(hash / eyes.length) % eyebrows.length;
+        int pupilsIndex = Math.abs(hash / (eyes.length * eyebrows.length)) % pupils.length;
+        int nosesIndex = Math.abs(hash / (eyes.length * eyebrows.length * pupils.length)) % noses.length;
+        int mouthsIndex = Math.abs(hash / (eyes.length * eyebrows.length * pupils.length * noses.length)) % mouths.length;
+        int faceShapesIndex1 = Math.abs(hash / (eyes.length * eyebrows.length * pupils.length * noses.length * mouths.length)) % faceShapes.length;
+        int faceShapesIndex2 = Math.abs(hash / (eyes.length * eyebrows.length * pupils.length * noses.length * mouths.length * faceShapes.length)) % faceShapes.length;
+
+        // Build the face string
+        StringBuilder faceBuilder = new StringBuilder();
+        faceBuilder.append("----------------------------\n");
+        faceBuilder.append("----------------------------\n");
+        faceBuilder.append("|                              |\n");
+        faceBuilder.append("|       ").append(eyebrows[eyebrowsIndex]).append("             ").append(eyebrows[eyebrowsIndex]).append("      |\n");
+        faceBuilder.append("|              ").append(noses[nosesIndex]).append("               |\n");
+        faceBuilder.append("|              ").append(noses[nosesIndex]).append("               |\n");
+
+        faceBuilder.append("|             ").append(mouths[mouthsIndex]).append("               |\n");
+        faceBuilder.append("|                               |\n");
+        faceBuilder.append("-----------------------------\n");
+        return faceBuilder.toString();
     }
 }

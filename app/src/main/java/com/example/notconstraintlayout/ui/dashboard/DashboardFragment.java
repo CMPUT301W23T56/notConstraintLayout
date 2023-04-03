@@ -1,9 +1,9 @@
 package com.example.notconstraintlayout.ui.dashboard;
 
-import static android.app.Activity.RESULT_OK;
 import static android.content.ContentValues.TAG;
 
 import android.Manifest;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -18,6 +18,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -25,7 +26,6 @@ import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
@@ -38,13 +38,16 @@ import com.example.notconstraintlayout.R;
 import com.example.notconstraintlayout.UserProfile;
 import com.example.notconstraintlayout.databinding.FragmentDashboardBinding;
 import com.example.notconstraintlayout.userDBManager;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.zxing.integration.android.IntentIntegrator;
+import com.google.firebase.firestore.GeoPoint;
 import com.journeyapps.barcodescanner.ScanContract;
 import com.journeyapps.barcodescanner.ScanOptions;
 
+import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.ArrayList;
@@ -76,6 +79,7 @@ public class DashboardFragment extends Fragment implements userDBManager.OnUserD
 
     private TextView textView;
     ActivityResultLauncher<ScanOptions> barCodeLauncher;
+    byte[] imageData; // Get the compressed image data
     public QrCodeDBManager qrDb;
     public int scannedBy = 0;
 
@@ -200,6 +204,21 @@ public class DashboardFragment extends Fragment implements userDBManager.OnUserD
         }
     }
 
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        Log.d(TAG, "Camera onActivityResult" + String.valueOf(resultCode));
+
+        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == Activity.RESULT_OK) {
+            Bundle extras = data.getExtras();
+            Bitmap imageBitmap = (Bitmap) extras.get("data");
+
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            imageBitmap.compress(Bitmap.CompressFormat.JPEG, 50, outputStream); // Compress the image
+            imageData = outputStream.toByteArray();
+        }
+    }
+
 
 
     @Override
@@ -208,7 +227,6 @@ public class DashboardFragment extends Fragment implements userDBManager.OnUserD
 
         userDBManager userManager = new userDBManager(requireContext());
         QrCodeDBManager qrDb = new QrCodeDBManager();
-
 
         ScanOptions options = new ScanOptions();
         options.setPrompt("Please Scan the code");
@@ -219,56 +237,99 @@ public class DashboardFragment extends Fragment implements userDBManager.OnUserD
             if (result.getContents() != null) {
                 String name = calculateName(result.getContents());
                 int score = computeScore(result.getContents());
-
+                String hash = String.valueOf(result.getContents().hashCode());
                 QrClass qrClass = new QrClass(name, score, String.valueOf(result.getContents().hashCode()));
 
-
-                qrDb.saveQRCodes(qrClass, new OnCompleteListener<Void>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Void> task) {
-                        if (task.isSuccessful()) {
-                            Log.d(TAG, "QR code saved to Firestore.");
-                        } else {
-                            Log.w(TAG, "Error saving QR code to Firestore.", task.getException());
-                        }
-                    }
-                });
-
-                userManager.addQrCode(qrClass, new userDBManager.OnQrCodeAddedListener() {
-                    @Override
-                    public void onQrCodeAdded() {
-                        Log.d(TAG, "QR code added.");
-                    }
-                }, new userDBManager.OnQrCodesChangedListener() {
-                    @Override
-                    public void onQrCodesChanged(List<QrClass> qrCodes) {
-                        mQrCodes.clear();
-                        mQrCodes.addAll(qrCodes);
-                        mAdapter.notifyDataSetChanged();
-                    }
-                });
                 LayoutInflater inflater = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
                 View customView = inflater.inflate(R.layout.custom_alert_dialog, null);
 
                 TextView nameAndScore = customView.findViewById(R.id.name_and_score);
                 nameAndScore.setText("Your Qr Name is: " + name + "\nYour Score is: " + score);
 
+                CheckBox checkBox = customView.findViewById(R.id.item_checkbox);
+
                 Button takePictureButton = customView.findViewById(R.id.take_picture_button);
                 takePictureButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         openCameraToTakePicture();
+                        qrClass.setImageData(imageData);
+                        Log.d(TAG, "camera OnClick method" + String.valueOf(imageData));
+                        Log.d(TAG, "Picture saved");
                     }
                 });
-                new androidx.appcompat.app.AlertDialog.Builder(getContext())
-                        .setTitle("Score and Name")
-                        .setPositiveButton(android.R.string.ok, null)
-                        .setView(customView)
-                        .show(); // Show alertDialogue box to the user
 
+                if (isQrCodeAlreadyScanned(hash)) {
+                    // Show toast that QR code was already added
+                    Toast.makeText(getContext(), "QR code already added", Toast.LENGTH_SHORT).show();
+                } else {
+                    // Show alert dialog
+                    AlertDialog alertDialog = new AlertDialog.Builder(getContext())
+                            .setTitle("Score and Name")
+                            .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    // Check if checkbox is selected
+                                    if (checkBox.isChecked()) {
+                                        CheckBox checkBox = customView.findViewById(R.id.item_checkbox);
+                                        if (checkBox.isChecked()) {
+                                            Log.d(TAG, "Checkbox checked");
+                                            FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(getContext());
+                                            if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA)
+                                                    == PackageManager.PERMISSION_GRANTED) {
+                                                // Call the method that requires the CAMERA permission here
+                                            } else {
+                                                int CAMERA_PERMISSION_REQUEST_CODE = 0;
+                                                ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.CAMERA},
+                                                        CAMERA_PERMISSION_REQUEST_CODE);
+                                            }
+                                            fusedLocationClient.getLastLocation()
+                                                    .addOnSuccessListener(location -> {
+                                                        if (location != null) {
+                                                            GeoPoint userLocation = new GeoPoint(location.getLatitude(), location.getLongitude());
+                                                            qrClass.setLocation(userLocation);
+                                                            Log.d(TAG, "Location set");
+                                                        } else {
+                                                            Log.d(TAG, "Failed to get last known location.");
+                                                        }
+                                                    });
+                                        }
+                                    }
+                                    qrDb.saveQRCodes(qrClass, new OnCompleteListener<Void>() {
+                                        @Override
+                                        public void onComplete(@NonNull Task<Void> task) {
+                                            if (task.isSuccessful()) {
+                                                Log.d(TAG, "QR code saved to Firestore.");
+                                            } else {
+                                                Log.w(TAG, "Error saving QR code to Firestore.", task.getException());
+                                            }
+                                        }
+                                    });
+
+                                    userManager.addQrCode(qrClass, new userDBManager.OnQrCodeAddedListener() {
+                                        @Override
+                                        public void onQrCodeAdded() {
+                                            Log.d(TAG, "QR code added.");
+                                        }
+                                    }, new userDBManager.OnQrCodesChangedListener() {
+                                        @Override
+                                        public void onQrCodesChanged(List<QrClass> qrCodes) {
+                                            mQrCodes.clear();
+                                            mQrCodes.addAll(qrCodes);
+                                            mAdapter.notifyDataSetChanged();
+                                        }
+                                    });
+                                }
+                            })
+                            .setNegativeButton(android.R.string.cancel, null)
+                            .setView(customView)
+                            .create();
+                    alertDialog.show();
+                }
             }
         });
     }
+
 
 
     @Override
@@ -348,20 +409,6 @@ public class DashboardFragment extends Fragment implements userDBManager.OnUserD
 
         // Launch the barcode scanner activity and handle the result using the activity result launcher
         barCodeLauncher.launch(options);
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
-            Bundle extras = data.getExtras();
-            Bitmap imageBitmap = (Bitmap) extras.get("data"); // stores the picture
-
-            // Handle the captured image here (e.g., display it in an ImageView)
-        } else if (requestCode == IntentIntegrator.REQUEST_CODE) {
-            // Your existing QR code scanning handling code
-        }
     }
 
     @Override

@@ -1,8 +1,10 @@
 package com.example.notconstraintlayout.ui.leaderboard;
 
+import static android.content.ContentValues.TAG;
 import static com.example.notconstraintlayout.R.layout.fragment_leaderboard;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -33,7 +35,11 @@ public class LeaderBoardFragment extends Fragment {
     ArrayList<PlayerListClass> searchList;
 
     private FragmentLeaderboardBinding binding;
-
+    TextView userRankTextView;
+    TextView userNameTextView;
+    TextView userPointsTextView;
+    String currentUsername;
+    int current_points;
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
         com.example.notconstraintlayout.ui.leaderboard.LeaderboardViewModel leaderboardViewModel =
@@ -54,6 +60,10 @@ public class LeaderBoardFragment extends Fragment {
         searchList = new ArrayList<>();
         searchView.setIconified(false);
         searchView.clearFocus();
+
+        userRankTextView = root.findViewById(R.id.user_rank);
+        userNameTextView = root.findViewById(R.id.user_name);
+        userPointsTextView = root.findViewById(R.id.user_points);
 
         loadLeaderboardData();
         //RecyclerView recyclerView = (RecyclerView)
@@ -109,6 +119,21 @@ public class LeaderBoardFragment extends Fragment {
                         return u2.getTotalScore() - u1.getTotalScore();
                     }
                 });
+
+                userDBManager userDbManager = new userDBManager(requireContext());
+                userDbManager.getUserProfile(new userDBManager.OnUserProfileLoadedListener() {
+                    @Override
+                    public void onUserProfileLoaded(UserProfile userProfile) {
+                        if (userProfile != null) {
+                            String currentUsername = userProfile.getUsername();
+                            current_points = userProfile.getTotalScore();
+                            // Use the currentUsername to display the user's name in the UI
+                        } else {
+                            Log.d(TAG, "Failed to load user profile.");
+                        }
+                    }
+                });
+
                 int rank = 1;
                 for (UserProfile userProfile : userProfiles) {
                     PlayerListClass playerListClass = new PlayerListClass();
@@ -116,6 +141,12 @@ public class LeaderBoardFragment extends Fragment {
                     playerListClass.setPlayerPoint(String.valueOf(userProfile.getTotalScore()));
                     playerListClass.setPlayerRank(rank++);
                     arrayList.add(playerListClass);
+                    if (userProfile.getUsername().equals(currentUsername)) {
+                        Log.d(TAG, "User found");
+                        userRankTextView.setText(String.valueOf(rank));
+                        userNameTextView.setText(currentUsername);
+                        userPointsTextView.setText(current_points);
+                    }
                 }
                 PlayerAdapter playerAdapter = new PlayerAdapter(LeaderBoardFragment.this, arrayList);
                 recyclerView.setAdapter(playerAdapter);

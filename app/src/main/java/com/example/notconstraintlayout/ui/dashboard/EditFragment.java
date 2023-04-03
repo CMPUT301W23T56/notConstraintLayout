@@ -62,7 +62,11 @@ public class EditFragment extends DialogFragment {
             }
         });
     }
-
+    /**
+     * Loads the user profile from shared preferences and displays it in the UI.
+     * This method retrieves the user's username and contact information from shared preferences
+     * and sets the values in the name and phone EditText fields
+     * */
     private void loadUserProfile() {
         SharedPreferences sharedPreferences = getActivity().getSharedPreferences("UserDetails", Context.MODE_PRIVATE);
 
@@ -72,7 +76,11 @@ public class EditFragment extends DialogFragment {
         nameEditText.setText(username);
         phoneEditText.setText(String.valueOf(contactInfo));
     }
-
+    /**
+     * Saves the user profile with the updated values from the UI.
+     * This method retrieves the new username and contact information from the name and phone EditText fields,
+     * and updates the user profile with these values.
+     */
     private void saveUserProfile() {
         String newUsername = nameEditText.getText().toString();
         String newContactInfoString = phoneEditText.getText().toString();

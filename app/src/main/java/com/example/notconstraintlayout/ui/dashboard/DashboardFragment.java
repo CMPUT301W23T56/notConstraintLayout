@@ -78,72 +78,6 @@ public class DashboardFragment extends Fragment implements userDBManager.OnUserD
     ActivityResultLauncher<ScanOptions> barCodeLauncher;
     public QrCodeDBManager qrDb;
     public int scannedBy = 0;
-    public void onAttach(@NonNull Context context) {
-        super.onAttach(context);
-
-        userDBManager userManager = new userDBManager(requireContext());
-        QrCodeDBManager qrDb = new QrCodeDBManager();
-
-
-        ScanOptions options = new ScanOptions();
-        options.setPrompt("Please Scan the code");
-        options.setBeepEnabled(true);
-        options.setCaptureActivity(CaptureAct.class); // To capture QR code through the camera
-
-        barCodeLauncher = registerForActivityResult(new ScanContract(), result -> {
-            if (result.getContents() != null) {
-                name = calculateName(result.getContents());
-                score = computeScore(result.getContents());
-
-                QrClass qrClass = new QrClass(name, score, String.valueOf(result.getContents().hashCode()));
-
-
-                qrDb.saveQRCodes(qrClass, new OnCompleteListener<Void>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Void> task) {
-                        if (task.isSuccessful()) {
-                            Log.d(TAG, "QR code saved to Firestore.");
-                        } else {
-                            Log.w(TAG, "Error saving QR code to Firestore.", task.getException());
-                        }
-                    }
-                });
-
-                userManager.addQrCode(qrClass, new userDBManager.OnQrCodeAddedListener() {
-                    @Override
-                    public void onQrCodeAdded() {
-                        Log.d(TAG, "QR code added.");
-                    }
-                }, new userDBManager.OnQrCodesChangedListener() {
-                    @Override
-                    public void onQrCodesChanged(List<QrClass> qrCodes) {
-                        mQrCodes.clear();
-                        mQrCodes.addAll(qrCodes);
-                        mAdapter.notifyDataSetChanged();
-                    }
-                });
-                LayoutInflater inflater = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-                View customView = inflater.inflate(R.layout.custom_alert_dialog, null);
-
-                TextView nameAndScore = customView.findViewById(R.id.name_and_score);
-                nameAndScore.setText("Your Qr Name is: " + name + "\nYour Score is: " + score);
-
-                Button takePictureButton = customView.findViewById(R.id.take_picture_button);
-                takePictureButton.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        openCameraToTakePicture();
-                    }
-                });
-                new androidx.appcompat.app.AlertDialog.Builder(getContext())
-                        .setTitle("Score and Name")
-                        .setPositiveButton(android.R.string.ok, null)
-                        .setView(customView)
-                        .show(); // Show alertDialogue box to the user
-
-            }
-        });
-    }
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -269,6 +203,75 @@ public class DashboardFragment extends Fragment implements userDBManager.OnUserD
 
 
     @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+
+        userDBManager userManager = new userDBManager(requireContext());
+        QrCodeDBManager qrDb = new QrCodeDBManager();
+
+
+        ScanOptions options = new ScanOptions();
+        options.setPrompt("Please Scan the code");
+        options.setBeepEnabled(true);
+        options.setCaptureActivity(CaptureAct.class); // To capture QR code through the camera
+
+        barCodeLauncher = registerForActivityResult(new ScanContract(), result -> {
+            if (result.getContents() != null) {
+                String name = calculateName(result.getContents());
+                int score = computeScore(result.getContents());
+
+                QrClass qrClass = new QrClass(name, score, String.valueOf(result.getContents().hashCode()));
+
+
+                qrDb.saveQRCodes(qrClass, new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        if (task.isSuccessful()) {
+                            Log.d(TAG, "QR code saved to Firestore.");
+                        } else {
+                            Log.w(TAG, "Error saving QR code to Firestore.", task.getException());
+                        }
+                    }
+                });
+
+                userManager.addQrCode(qrClass, new userDBManager.OnQrCodeAddedListener() {
+                    @Override
+                    public void onQrCodeAdded() {
+                        Log.d(TAG, "QR code added.");
+                    }
+                }, new userDBManager.OnQrCodesChangedListener() {
+                    @Override
+                    public void onQrCodesChanged(List<QrClass> qrCodes) {
+                        mQrCodes.clear();
+                        mQrCodes.addAll(qrCodes);
+                        mAdapter.notifyDataSetChanged();
+                    }
+                });
+                LayoutInflater inflater = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                View customView = inflater.inflate(R.layout.custom_alert_dialog, null);
+
+                TextView nameAndScore = customView.findViewById(R.id.name_and_score);
+                nameAndScore.setText("Your Qr Name is: " + name + "\nYour Score is: " + score);
+
+                Button takePictureButton = customView.findViewById(R.id.take_picture_button);
+                takePictureButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        openCameraToTakePicture();
+                    }
+                });
+                new androidx.appcompat.app.AlertDialog.Builder(getContext())
+                        .setTitle("Score and Name")
+                        .setPositiveButton(android.R.string.ok, null)
+                        .setView(customView)
+                        .show(); // Show alertDialogue box to the user
+
+            }
+        });
+    }
+
+
+    @Override
     public void onDestroyView() {
         super.onDestroyView();
         binding = null;
@@ -326,6 +329,15 @@ public class DashboardFragment extends Fragment implements userDBManager.OnUserD
             }
         });
         dialog.show();
+    }
+
+    private boolean isQrCodeAlreadyScanned(String hash) {
+        for (QrClass qr : mQrCodes) {
+            if (qr.getHash().equals(hash)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public void scanQrCode() {

@@ -40,6 +40,7 @@
             android:gravity="end"
             android:textColor="@color/black"/>
         <TextView
+            android:id="@+id/away"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text=" away"

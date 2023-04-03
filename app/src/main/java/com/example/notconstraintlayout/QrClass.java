@@ -2,12 +2,14 @@ package com.example.notconstraintlayout;
 
 import android.graphics.Bitmap;
 
+import com.google.firebase.firestore.GeoPoint;
+
 import java.util.HashMap;
 import java.util.Map;
 
 public class QrClass {
     private String hash;
-    private com.google.android.gms.maps.model.LatLng location;
+    private GeoPoint location;
     private String name;
     private int points;
     private String face;
@@ -22,22 +24,9 @@ public class QrClass {
         this.hash = hash;
     }
 
-    public QrClass(String name, com.google.android.gms.maps.model.LatLng location, int points) {
-        this.name = name;
-        this.location = location;
-        this.points = points;
-
-
-    }
     public QrClass() {
         // Required empty constructor for Firestore deserialization
     }
-
-
-//    public QrClass(String name, int points) {
-//        this.name = name;
-//        this.points = points;
-//    }
 
     public QrClass(String name, int score, String contents) {
         this.name = name;
@@ -46,11 +35,11 @@ public class QrClass {
     }
 
 
-    public com.google.android.gms.maps.model.LatLng getLocation() {
+    public GeoPoint getLocation() {
         return location;
     }
 
-    public void setLocation(com.google.android.gms.maps.model.LatLng location) {
+    public void setLocation(GeoPoint location) {
         this.location = location;
     }
 

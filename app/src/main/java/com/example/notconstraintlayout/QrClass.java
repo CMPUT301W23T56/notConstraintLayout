@@ -13,6 +13,8 @@ public class QrClass {
     private String face;
     private Bitmap location_image;
 
+    private int scannedBy = 0;
+
 
     public QrClass(String hash) {
         this.hash = hash;
@@ -77,11 +79,20 @@ public class QrClass {
         qrCodeMap.put("points", this.points);
         qrCodeMap.put("face", this.face);
         qrCodeMap.put("location", this.location);
+        qrCodeMap.put("scannedBy", this.scannedBy);
         return qrCodeMap;
     }
 
 
     public String getHash() {
         return hash;
+    }
+
+    public int getScannedBy() {
+        return scannedBy;
+    }
+
+    public void setScannedBy(int scannedBy) {
+        this.scannedBy = scannedBy;
     }
 }

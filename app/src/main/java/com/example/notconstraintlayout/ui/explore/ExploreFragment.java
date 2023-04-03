@@ -75,7 +75,7 @@ public class ExploreFragment extends Fragment implements OnMapReadyCallback, Loc
         qrDb.displayQrCodes(new QrCodeDBManager.OnUsersLoadedListener() {
             @Override
             public void onUsersLoaded(List<QrClass> qrClassList) {
-                qrArray.clear();
+
                 for (QrClass qrClass : qrClassList) {
                     qrArray.add(qrClass);
                 }

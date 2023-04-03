@@ -11,30 +11,55 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-
+import com.google.firebase.firestore.FieldValue;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Transaction;
 public class QrCodeDBManager {
 
 
-    private FirebaseFirestore db;
-    private CollectionReference qrCodesRef;;
+    private FirebaseFirestore db= FirebaseFirestore.getInstance();;
+    private CollectionReference qrCodesRef= db.collection("qrCodes");
+
+
 
     public QrCodeDBManager() {
-        db = FirebaseFirestore.getInstance();
-        qrCodesRef = db.collection("qrCodes");
     }
 
+//    public void saveQRCodes(QrClass qrCode, OnCompleteListener<Void> onCompleteListener) {
+//        qrCodesRef.document(qrCode.getHash())
+//                .set(qrCode.toMap())
+//                .addOnCompleteListener(onCompleteListener);
+//    }
+
     public void saveQRCodes(QrClass qrCode, OnCompleteListener<Void> onCompleteListener) {
-        qrCodesRef.document(qrCode.getHash())
-                .set(qrCode.toMap())
-                .addOnCompleteListener(onCompleteListener);
+        final DocumentReference qrCodeRef = db.collection("qrCodes").document(qrCode.getHash());
+        db.runTransaction(new Transaction.Function<Void>() {
+            @Override
+            public Void apply(Transaction transaction) throws FirebaseFirestoreException {
+                DocumentSnapshot snapshot = transaction.get(qrCodeRef);
+
+                if (snapshot.exists()) {
+                    // If the QR code already exists, increment the scannedBy field by 1
+                    qrCode.setScannedBy(qrCode.getScannedBy()+1);
+                } else {
+                    qrCodeRef
+                        .set(qrCode.toMap())
+                        .addOnCompleteListener(onCompleteListener);
+                }
+
+                return null;
+            }
+        }).addOnCompleteListener(onCompleteListener);
     }
 
 //    public void saveQRCodes(QrClass qrcode) {

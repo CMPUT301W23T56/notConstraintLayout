@@ -20,7 +20,7 @@ public class QrClass {
 
 
 
-    public QrClass(String hash) {
+    public QrClass(String hash, int score) {
         this.hash = hash;
     }
 

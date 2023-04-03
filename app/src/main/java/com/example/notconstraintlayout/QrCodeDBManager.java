@@ -62,31 +62,6 @@ public class QrCodeDBManager {
         }).addOnCompleteListener(onCompleteListener);
     }
 
-//    public void saveQRCodes(QrClass qrcode) {
-//        HashMap<String, Object> data = new HashMap<>();
-//        data.put("location image", qrcode.getLocation_image());
-//        data.put("name", qrcode.getLocation());
-//        data.put("points", qrcode.getPoints());
-//        data.put("face", qrcode.getFace());
-//        data.put("location", qrcode.getLocation());
-//
-//        qrCodesRef
-//                .document(qrcode.getName())
-//                .set(data)
-//                .addOnSuccessListener(new OnSuccessListener<Void>() {
-//                    @Override
-//                    public void onSuccess(Void unused) {
-//                        Log.d(TAG, "User profile data has been saved successfully!");
-//                    }
-//                })
-//                .addOnFailureListener(new OnFailureListener() {
-//                    @Override
-//                    public void onFailure(@NonNull Exception e) {
-//                        Log.d(TAG, "Failed to save user profile data: ", e);
-//                    }
-//                });
-//    }
-
     public void displayQrCodes(final QrCodeDBManager.OnUsersLoadedListener listener) {
         qrCodesRef.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override

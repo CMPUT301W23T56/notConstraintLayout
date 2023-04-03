@@ -34,11 +34,6 @@ public class QrClass {
     }
 
 
-//    public QrClass(String name, int points) {
-//        this.name = name;
-//        this.points = points;
-//    }
-
     public QrClass(String name, int score, String contents) {
         this.name = name;
         this.points = score;
@@ -90,11 +85,13 @@ public class QrClass {
         return hash;
     }
 
+
     public int getScannedBy() {
         return scannedBy;
     }
 
-    public void setScannedBy(int scannedBy) {
+    public int setScannedBy(int scannedBy) {
         this.scannedBy = scannedBy;
+        return scannedBy;
     }
 }

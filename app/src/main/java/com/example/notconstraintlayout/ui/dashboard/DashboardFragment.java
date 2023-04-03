@@ -219,8 +219,7 @@ public class DashboardFragment extends Fragment implements userDBManager.OnUserD
                                 // You can set up an adapter for the ListView and set OnClickListener for the send button here.
                                 AlertDialog.Builder commentDialog = new AlertDialog.Builder(context);
                                 commentDialog.setView(commentView)
-                                        .setTitle("Add Comment")
-                                        .setNegativeButton("Cancel", null)
+                                          .setNegativeButton("Cancel", null)
                                         .create()
                                         .show();
                             }
@@ -453,4 +452,5 @@ public class DashboardFragment extends Fragment implements userDBManager.OnUserD
         }
         return hashNameBuilder.toString();
     }
+
 }

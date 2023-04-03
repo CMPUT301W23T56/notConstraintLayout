@@ -26,12 +26,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.notconstraintlayout.QrClass;
 import com.example.notconstraintlayout.QrCodeDBManager;
 import com.example.notconstraintlayout.R;
-import com.example.notconstraintlayout.UserProfile;
 import com.example.notconstraintlayout.databinding.FragmentExploreBinding;
-import com.example.notconstraintlayout.ui.leaderboard.LeaderBoardFragment;
-import com.example.notconstraintlayout.ui.leaderboard.PlayerAdapter;
-import com.example.notconstraintlayout.ui.leaderboard.PlayerListClass;
-import com.example.notconstraintlayout.userDBManager;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -40,12 +35,11 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.firebase.firestore.GeoPoint;
 
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 import io.ghyeok.stickyswitch.widget.StickySwitch;
@@ -180,15 +174,23 @@ public class ExploreFragment extends Fragment implements OnMapReadyCallback, Loc
                         }
                     });
 
-            // Loop through qrList and add markers
-            for (QrClass qr : qrArray) {
-                LatLng qrLatLng = qr.getLocation();
-                MarkerOptions markerOptions = new MarkerOptions()
-                        .position(qrLatLng)
-                        .title(qr.getName())
-                        .snippet("Points: " + qr.getPoints());
-                mMap.addMarker(markerOptions);
-            }
+            QrCodeDBManager qrDb = new QrCodeDBManager();
+            qrDb.displayQrCodes(new QrCodeDBManager.OnUsersLoadedListener() {
+                @Override
+                public void onUsersLoaded(List<QrClass> qrClassList) {
+                    for (QrClass qr : qrClassList) {
+                        GeoPoint qrGeoPoint = qr.getLocation();
+                        if (qrGeoPoint != null) {
+                            LatLng qrLatLng = new LatLng(qrGeoPoint.getLatitude(), qrGeoPoint.getLongitude());
+                            MarkerOptions markerOptions = new MarkerOptions()
+                                    .position(qrLatLng)
+                                    .title(qr.getName())
+                                    .snippet("Points: " + qr.getPoints());
+                            mMap.addMarker(markerOptions);
+                        }
+                    }
+                }
+            });
 
         } else {
             // Request location permission if not granted

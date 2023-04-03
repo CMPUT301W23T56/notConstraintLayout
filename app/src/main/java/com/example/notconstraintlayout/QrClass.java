@@ -2,6 +2,11 @@ package com.example.notconstraintlayout;
 
 import android.graphics.Bitmap;
 
+/**
+ * Represents a QR code object with associated attributes such as hash, name, location, points, face, and location image.
+ * This class provides constructors for creating instances of {QrClass} with different sets of attributes.
+ * It also provides getter and setter methods for accessing and modifying the attributes.
+ */
 public class QrClass {
     private String hash;
     private com.google.android.gms.maps.model.LatLng location;

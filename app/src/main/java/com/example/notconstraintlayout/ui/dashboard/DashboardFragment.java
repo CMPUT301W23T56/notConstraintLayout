@@ -8,6 +8,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
@@ -15,6 +18,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -34,6 +38,11 @@ import com.example.notconstraintlayout.UserProfile;
 import com.example.notconstraintlayout.databinding.FragmentDashboardBinding;
 import com.example.notconstraintlayout.userDBManager;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.EncodeHintType;
+import com.google.zxing.MultiFormatWriter;
+import com.google.zxing.WriterException;
+import com.google.zxing.common.BitMatrix;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.journeyapps.barcodescanner.ScanContract;
 import com.journeyapps.barcodescanner.ScanOptions;
@@ -43,12 +52,11 @@ import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-
-
 public class DashboardFragment extends Fragment implements userDBManager.OnUserDocumentUpdatedListener {
 
     private FragmentDashboardBinding binding;
@@ -132,6 +140,7 @@ public class DashboardFragment extends Fragment implements userDBManager.OnUserD
         }
     }
 
+
     private static final int PERMISSION_REQUEST_CAMERA = 2;
 
     /**
@@ -164,9 +173,11 @@ public class DashboardFragment extends Fragment implements userDBManager.OnUserD
 
         barCodeLauncher = registerForActivityResult(new ScanContract(), result -> {
             if (result.getContents() != null) {
+                String face = generateTextFace(result.getContents());
                 String name = calculateName(result.getContents());
                 int score = computeScore(result.getContents());
                 QrClass qrClass = new QrClass(name, score);
+
                 userManager.addQrCode(qrClass, new userDBManager.OnQrCodeAddedListener() {
                     @Override
                     public void onQrCodeAdded() {
@@ -184,7 +195,11 @@ public class DashboardFragment extends Fragment implements userDBManager.OnUserD
                 View customView = inflater.inflate(R.layout.custom_alert_dialog, null);
 
                 TextView nameAndScore = customView.findViewById(R.id.name_and_score);
+                TextView faceTextView = customView.findViewById(R.id.face_text_view); // Add a TextView with id
+
                 nameAndScore.setText("Your Qr Name is: " + name + "\nYour Score is: " + score);
+                faceTextView.setText(face); // Set the face to the TextView
+
 
                 Button takePictureButton = customView.findViewById(R.id.take_picture_button);
                 takePictureButton.setOnClickListener(new View.OnClickListener() {
@@ -202,7 +217,6 @@ public class DashboardFragment extends Fragment implements userDBManager.OnUserD
             }
         });
     }
-
 
     @Override
     public void onDestroyView() {
@@ -225,6 +239,7 @@ public class DashboardFragment extends Fragment implements userDBManager.OnUserD
         // Launch the barcode scanner activity and handle the result using the activity result launcher
         barCodeLauncher.launch(options);
     }
+
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -256,6 +271,7 @@ public class DashboardFragment extends Fragment implements userDBManager.OnUserD
      * This method calculates the SHA-256 hash of the given {Value} and identifies
      * repeated hexadecimal digit sequences in the hash. It then calculates a score based
      * on the length and value of the repeated hexadecimal sequences.
+     *
      * @param Value the input string to be hashed and scored
      * @return the computed score based on repeated digit sequences in the SHA-256 hash
      */
@@ -301,6 +317,7 @@ public class DashboardFragment extends Fragment implements userDBManager.OnUserD
      * This method iterates through the input byte array and converts each byte to a
      * two-digit hexadecimal string, appending the resulting strings to form a single
      * hexadecimal string.
+     *
      * @param bytes the byte array to be converted to a hexadecimal string
      * @return the hexadecimal string representation of the input byte array
      */
@@ -337,4 +354,66 @@ public class DashboardFragment extends Fragment implements userDBManager.OnUserD
         }
         return hashNameBuilder.toString();
     }
+
+//    private String generateTextFace(String code) {
+//        // Define the character sets for different face parts
+//        String[] eyes = {"o", "O", "0", "x", "-"};
+//        String[] noses = {"-", "~", "v", "^"};
+//        String[] mouths = {"u", "U", "(", ")", "W"};
+//        String[] faceShapes = {"O", "0", "C", "(", ")"};
+//
+//        // Use the hashCode() to ensure that similar strings produce different faces
+//        int hash = code.hashCode();
+//
+//        // Use parts of the hash to select face parts
+//        int eyesIndex = Math.abs(hash) % eyes.length;
+//        int nosesIndex = Math.abs(hash / eyes.length) % noses.length;
+//        int mouthsIndex = Math.abs(hash / (eyes.length * noses.length)) % mouths.length;
+//        int faceShapesIndex1 = Math.abs(hash / (eyes.length * noses.length * mouths.length)) % faceShapes.length;
+//        int faceShapesIndex2 = Math.abs(hash / (eyes.length * noses.length * mouths.length * faceShapes.length)) % faceShapes.length;
+//
+//        // Build the face string
+//        StringBuilder faceBuilder = new StringBuilder();
+//        faceBuilder.append("  ").append(faceShapes[faceShapesIndex1]).append(faceShapes[faceShapesIndex1]).append(faceShapes[faceShapesIndex1]).append("\n");
+//        faceBuilder.append(faceShapes[faceShapesIndex1]).append("     ").append(faceShapes[faceShapesIndex1]).append("\n");
+//        faceBuilder.append(faceShapes[faceShapesIndex1]).append(eyes[eyesIndex]).append(" ").append(eyes[eyesIndex]).append(faceShapes[faceShapesIndex1]).append("\n");
+//        faceBuilder.append(faceShapes[faceShapesIndex1]).append(" ").append(noses[nosesIndex]).append(" ").append(faceShapes[faceShapesIndex1]).append("\n");
+//        faceBuilder.append(faceShapes[faceShapesIndex2]).append(faceShapes[faceShapesIndex2]).append(mouths[mouthsIndex]).append(faceShapes[faceShapesIndex2]).append(faceShapes[faceShapesIndex2]).append("\n");
+//        return faceBuilder.toString();
+//    }
+private String generateTextFace(String code) {
+    // Define the character sets for different face parts
+    String[] eyes = {"o", "O", "0", "x", "-", ">", "<", "(", ")", "8"};
+    String[] eyebrows = {"^", "-", ">", "<", "v", "W"};
+    String[] pupils = {"*", ".", "o", "O", "0", "x"};
+    String[] noses = {"-", "~", "v", "^", "o", "O", "0", "S"};
+    String[] mouths = {"u", "U", "(", ")", "W", "V", "[", "]", "{", "}", "/", "\\"};
+    String[] faceShapes = {"O", "0", "C", "(", ")", "D", "P", "Q", "B", "@"};
+
+    // Use the hashCode() of the QR code to ensure that similar strings produce different faces
+    int hash = code.hashCode();
+
+    // Use parts of the hash to select face parts
+    int eyesIndex = Math.abs(hash) % eyes.length;
+    int eyebrowsIndex = Math.abs(hash / eyes.length) % eyebrows.length;
+    int pupilsIndex = Math.abs(hash / (eyes.length * eyebrows.length)) % pupils.length;
+    int nosesIndex = Math.abs(hash / (eyes.length * eyebrows.length * pupils.length)) % noses.length;
+    int mouthsIndex = Math.abs(hash / (eyes.length * eyebrows.length * pupils.length * noses.length)) % mouths.length;
+    int faceShapesIndex1 = Math.abs(hash / (eyes.length * eyebrows.length * pupils.length * noses.length * mouths.length)) % faceShapes.length;
+    int faceShapesIndex2 = Math.abs(hash / (eyes.length * eyebrows.length * pupils.length * noses.length * mouths.length * faceShapes.length)) % faceShapes.length;
+
+    // Build the face string
+    StringBuilder faceBuilder = new StringBuilder();
+    faceBuilder.append("----------------------------\n");
+    faceBuilder.append("----------------------------\n");
+    faceBuilder.append("|                              |\n");
+    faceBuilder.append("|       ").append(eyebrows[eyebrowsIndex]).append("             ").append(eyebrows[eyebrowsIndex]).append("      |\n");
+    faceBuilder.append("|              ").append(noses[nosesIndex]).append("               |\n");
+    faceBuilder.append("|              ").append(noses[nosesIndex]).append("               |\n");
+
+    faceBuilder.append("|             ").append(mouths[mouthsIndex]).append("               |\n");
+    faceBuilder.append("|                               |\n");
+    faceBuilder.append("-----------------------------\n");
+    return faceBuilder.toString();
+}
 }

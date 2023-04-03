@@ -36,6 +36,7 @@ public class QrCodeAdapter extends ArrayAdapter<QrClass> {
         qrName.setText(name);
         qrPoints.setText(String.valueOf(points));
 
+
         return convertView;
     }
 }

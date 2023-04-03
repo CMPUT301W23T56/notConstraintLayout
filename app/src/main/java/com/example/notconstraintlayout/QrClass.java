@@ -10,7 +10,6 @@ public class QrClass {
     private String face;
     private Bitmap location_image;
 
-
     public QrClass(String hash) {
         this.hash = hash;
     }

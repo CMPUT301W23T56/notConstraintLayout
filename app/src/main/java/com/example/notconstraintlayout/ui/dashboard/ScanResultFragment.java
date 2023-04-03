@@ -10,12 +10,14 @@ import android.widget.TextView;
 
 import androidx.fragment.app.DialogFragment;
 
+import com.example.notconstraintlayout.QrClass;
 import com.example.notconstraintlayout.R;
 
 public class ScanResultFragment extends DialogFragment {
 
-    private static final String ARG_SCORE = "score";
-    private static final String ARG_NAME = "name";
+    private static final String ARG_SCORE = "";
+    private static final String ARG_NAME = "";
+
 
     public static ScanResultFragment newInstance(int score, String name) {
         ScanResultFragment fragment = new ScanResultFragment();
@@ -46,10 +48,11 @@ public class ScanResultFragment extends DialogFragment {
         View view = LayoutInflater.from(getActivity()).inflate(R.layout.fragment_scan_result, null);
 
         TextView scoreTextView = view.findViewById(R.id.score_text);
-        scoreTextView.setText(getString(R.string.score_format, score));
+        scoreTextView.setText("Score: "+ score);
+
 
         TextView nameTextView = view.findViewById(R.id.name_text);
-        nameTextView.setText(getString(R.string.name_format, name));
+        nameTextView.setText("Name: "+ name);
 
         return new AlertDialog.Builder(getActivity())
                 .setTitle(R.string.scan_result_title)

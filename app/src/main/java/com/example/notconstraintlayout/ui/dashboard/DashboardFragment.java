@@ -6,6 +6,7 @@ import static android.content.ContentValues.TAG;
 import android.Manifest;
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -15,6 +16,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -31,10 +33,13 @@ import androidx.fragment.app.Fragment;
 import com.example.notconstraintlayout.CaptureAct;
 import com.example.notconstraintlayout.QrClass;
 import com.example.notconstraintlayout.QrCodeAdapter;
+import com.example.notconstraintlayout.QrCodeDBManager;
 import com.example.notconstraintlayout.R;
 import com.example.notconstraintlayout.UserProfile;
 import com.example.notconstraintlayout.databinding.FragmentDashboardBinding;
 import com.example.notconstraintlayout.userDBManager;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.journeyapps.barcodescanner.ScanContract;
@@ -59,6 +64,8 @@ public class DashboardFragment extends Fragment implements userDBManager.OnUserD
     private ArrayList<QrClass> mQrCodes = new ArrayList<>();
     private static final int REQUEST_CODE_QR_SCAN = 0;
     private static final int REQUEST_IMAGE_CAPTURE = 1;
+    public String name;
+    public int score;
 
     FloatingActionButton scan_button;
 
@@ -69,6 +76,8 @@ public class DashboardFragment extends Fragment implements userDBManager.OnUserD
 
     private TextView textView;
     ActivityResultLauncher<ScanOptions> barCodeLauncher;
+    public QrCodeDBManager qrDb;
+    public int scannedBy = 0;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -100,6 +109,40 @@ public class DashboardFragment extends Fragment implements userDBManager.OnUserD
                 }
             }
         });
+        mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
+
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                // Show a dialog with options to delete or cancel
+                new AlertDialog.Builder(requireContext())
+
+                        .setMessage("Name: "+name+ "\nScore: "+score)
+                        .setPositiveButton("Delete", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                // Delete the selected QR code and update the list
+                                QrClass qrCodeToDelete = mQrCodes.get(position);
+                                userDBManager.removeQrCode(qrCodeToDelete, new userDBManager.OnQrCodeRemovedListener() {
+                                    @Override
+                                    public void onQrCodeRemoved() {
+                                        Log.d(TAG, "QR code removed.");
+                                    }
+                                }, new userDBManager.OnQrCodesChangedListener() {
+                                    @Override
+                                    public void onQrCodesChanged(List<QrClass> qrCodes) {
+                                        mQrCodes.clear();
+                                        mQrCodes.addAll(qrCodes);
+                                        mAdapter.notifyDataSetChanged();
+                                    }
+                                });
+                            }
+                        })
+                        .setNegativeButton("Cancel", null)
+
+                        .show();
+            }
+        });
+
 
         binding.sort.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -157,11 +200,15 @@ public class DashboardFragment extends Fragment implements userDBManager.OnUserD
         }
     }
 
+
+
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
 
         userDBManager userManager = new userDBManager(requireContext());
+        QrCodeDBManager qrDb = new QrCodeDBManager();
+
 
         ScanOptions options = new ScanOptions();
         options.setPrompt("Please Scan the code");
@@ -172,7 +219,21 @@ public class DashboardFragment extends Fragment implements userDBManager.OnUserD
             if (result.getContents() != null) {
                 String name = calculateName(result.getContents());
                 int score = computeScore(result.getContents());
-                QrClass qrClass = new QrClass(name, score);
+
+                QrClass qrClass = new QrClass(name, score, String.valueOf(result.getContents().hashCode()));
+
+
+                qrDb.saveQRCodes(qrClass, new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        if (task.isSuccessful()) {
+                            Log.d(TAG, "QR code saved to Firestore.");
+                        } else {
+                            Log.w(TAG, "Error saving QR code to Firestore.", task.getException());
+                        }
+                    }
+                });
+
                 userManager.addQrCode(qrClass, new userDBManager.OnQrCodeAddedListener() {
                     @Override
                     public void onQrCodeAdded() {
@@ -221,6 +282,7 @@ public class DashboardFragment extends Fragment implements userDBManager.OnUserD
         View dialogView = inflater.inflate(R.layout.edit_profile_dialog, null);
         userDBManager userManager = new userDBManager(requireContext());
 
+
         EditText editUsername = dialogView.findViewById(R.id.edit_username);
         EditText editPhoneNumber = dialogView.findViewById(R.id.edit_phone_number);
         Button updateButton = dialogView.findViewById(R.id.button_update);
@@ -267,6 +329,15 @@ public class DashboardFragment extends Fragment implements userDBManager.OnUserD
             }
         });
         dialog.show();
+    }
+
+    private boolean isQrCodeAlreadyScanned(String hash) {
+        for (QrClass qr : mQrCodes) {
+            if (qr.getHash().equals(hash)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public void scanQrCode() {

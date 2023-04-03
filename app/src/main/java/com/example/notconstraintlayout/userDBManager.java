@@ -145,6 +145,27 @@ public class userDBManager {
     public interface OnUsersLoadedListener {
         void onUsersLoaded(List<UserProfile> userProfiles);
     }
+    public void removeQrCode(QrClass qrCodeToRemove, OnQrCodeRemovedListener removedListener, OnQrCodesChangedListener qrCodesChangedListener) {
+        getUserProfile(new OnUserProfileLoadedListener() {
+            @Override
+            public void onUserProfileLoaded(UserProfile userProfile) {
+                if (userProfile != null) {
+                    userProfile.removeQrCode(qrCodeToRemove);
+                    userProfile.setTotalScanned(userProfile.getTotalScanned() - 1);
+                    userProfile.setTotalScore(userProfile.getTotalScore() - qrCodeToRemove.getPoints());
+                    saveUserProfile(userProfile);
+                    removedListener.onQrCodeRemoved();
+                    qrCodesChangedListener.onQrCodesChanged(userProfile.getScannedQrCodes());
+                } else {
+                    Log.d(TAG, "Failed to load user profile.");
+                }
+            }
+        });
+    }
+
+    public interface OnQrCodeRemovedListener {
+        void onQrCodeRemoved();
+    }
 
 
     public void addQrCode(QrClass qrCode, OnQrCodeAddedListener listener, OnQrCodesChangedListener qrCodesChangedListener) {

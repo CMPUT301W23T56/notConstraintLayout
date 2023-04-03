@@ -10,6 +10,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
@@ -41,9 +42,14 @@ import com.example.notconstraintlayout.userDBManager;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.firestore.GeoPoint;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 import com.journeyapps.barcodescanner.ScanContract;
 import com.journeyapps.barcodescanner.ScanOptions;
 
@@ -62,6 +68,7 @@ import java.util.regex.Pattern;
 public class DashboardFragment extends Fragment implements userDBManager.OnUserDocumentUpdatedListener {
 
     private FragmentDashboardBinding binding;
+    FirebaseStorage storage = FirebaseStorage.getInstance();
     private ListView mListView;
     private QrCodeAdapter mAdapter;
     private ArrayList<QrClass> mQrCodes = new ArrayList<>();
@@ -81,6 +88,8 @@ public class DashboardFragment extends Fragment implements userDBManager.OnUserD
     ActivityResultLauncher<ScanOptions> barCodeLauncher;
     byte[] imageData; // Get the compressed image data
     public QrCodeDBManager qrDb;
+    QrClass qrClass;
+
     public int scannedBy = 0;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -216,6 +225,30 @@ public class DashboardFragment extends Fragment implements userDBManager.OnUserD
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             imageBitmap.compress(Bitmap.CompressFormat.JPEG, 50, outputStream); // Compress the image
             imageData = outputStream.toByteArray();
+
+            StorageReference storageRef = storage.getReference();
+            StorageReference imageRef = storageRef.child("images/" + qrClass.getHash());
+            UploadTask uploadTask = imageRef.putBytes(imageData);
+            uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                @Override
+                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                    Log.d(TAG, "Image uploaded to Firebase Storage.");
+                    // Get the download URL of the uploaded image
+                    imageRef.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                        @Override
+                        public void onSuccess(Uri uri) {
+                            String imageUrl = uri.toString();
+                            qrClass.setImageUrl(imageUrl);
+                            Log.d(TAG, "Image URL set");
+                        }
+                    });
+                }
+            }).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                    Log.e(TAG, "Failed to upload image to Firebase Storage.", e);
+                }
+            });
         }
     }
 
@@ -238,7 +271,7 @@ public class DashboardFragment extends Fragment implements userDBManager.OnUserD
                 String name = calculateName(result.getContents());
                 int score = computeScore(result.getContents());
                 String hash = String.valueOf(result.getContents().hashCode());
-                QrClass qrClass = new QrClass(name, score, String.valueOf(result.getContents().hashCode()));
+                qrClass = new QrClass(name, score, String.valueOf(result.getContents().hashCode()));
 
                 LayoutInflater inflater = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
                 View customView = inflater.inflate(R.layout.custom_alert_dialog, null);
@@ -253,9 +286,6 @@ public class DashboardFragment extends Fragment implements userDBManager.OnUserD
                     @Override
                     public void onClick(View v) {
                         openCameraToTakePicture();
-                        qrClass.setImageData(imageData);
-                        Log.d(TAG, "camera OnClick method" + String.valueOf(imageData));
-                        Log.d(TAG, "Picture saved");
                     }
                 });
 

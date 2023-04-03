@@ -16,14 +16,15 @@ public class QrClass {
     private Bitmap location_image;
 
     private int scannedBy = 0;
-    private byte[] imageData;
 
-    public byte[] getImageData() {
-        return imageData;
+    private String imageUrl;
+
+    public String getImageUrl() {
+        return imageUrl;
     }
 
-    public void setImageData(byte[] imageData) {
-        this.imageData = imageData;
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 
     public QrClass(String hash) {

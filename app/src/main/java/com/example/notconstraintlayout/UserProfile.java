@@ -11,6 +11,17 @@ public class UserProfile {
     private int totalScanned;
     private ArrayList<QrClass> scannedQrCodes;
     private Context context;
+    public void removeQrCode(QrClass qrCodeToRemove) {
+        if (scannedQrCodes != null && !scannedQrCodes.isEmpty()) {
+            for (int i = 0; i < scannedQrCodes.size(); i++) {
+                if (scannedQrCodes.get(i).getHash().equals(qrCodeToRemove.getHash())) {
+                    scannedQrCodes.remove(i);
+                    break;
+                }
+            }
+        }
+    }
+
 
     public UserProfile(Context context) {
         this.context = context;

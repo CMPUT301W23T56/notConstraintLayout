@@ -100,14 +100,25 @@ public class userDBManager {
         }
     }
 
-    public void updateProfile(UserProfile userProfile, OnQrCodeAddedListener listener) {
-        DocumentReference userDocRef = db.collection("Profiles").document(userId);
-        userDocRef.set(userProfile).addOnCompleteListener(task -> {
-            if (task.isSuccessful()) {
-                Log.d(TAG, "User profile updated.");
-                listener.onQrCodeAdded();
-            } else {
-                Log.d(TAG, "User profile update failed.");
+    public void updateProfile(String newUsername, String newPhoneNumber, OnUserProfileUpdatedListener listener) {
+        getUserProfile(new OnUserProfileLoadedListener() {
+            @Override
+            public void onUserProfileLoaded(UserProfile userProfile) {
+                if (userProfile != null) {
+                    userProfile.setUsername(newUsername);
+                    userProfile.setContactInfo(Long.parseLong(newPhoneNumber));
+                    saveUserProfile(userProfile);
+
+                    if (listener != null) {
+                        listener.onUserProfileUpdated(userProfile);
+                    }
+                } else {
+                    Log.d(TAG, "Failed to load user profile.");
+
+                    if (listener != null) {
+                        listener.onUserProfileUpdated(null);
+                    }
+                }
             }
         });
     }
@@ -133,6 +144,27 @@ public class userDBManager {
 
     public interface OnUsersLoadedListener {
         void onUsersLoaded(List<UserProfile> userProfiles);
+    }
+    public void removeQrCode(QrClass qrCodeToRemove, OnQrCodeRemovedListener removedListener, OnQrCodesChangedListener qrCodesChangedListener) {
+        getUserProfile(new OnUserProfileLoadedListener() {
+            @Override
+            public void onUserProfileLoaded(UserProfile userProfile) {
+                if (userProfile != null) {
+                    userProfile.removeQrCode(qrCodeToRemove);
+                    userProfile.setTotalScanned(userProfile.getTotalScanned() - 1);
+                    userProfile.setTotalScore(userProfile.getTotalScore() - qrCodeToRemove.getPoints());
+                    saveUserProfile(userProfile);
+                    removedListener.onQrCodeRemoved();
+                    qrCodesChangedListener.onQrCodesChanged(userProfile.getScannedQrCodes());
+                } else {
+                    Log.d(TAG, "Failed to load user profile.");
+                }
+            }
+        });
+    }
+
+    public interface OnQrCodeRemovedListener {
+        void onQrCodeRemoved();
     }
 
 
@@ -213,5 +245,9 @@ public class userDBManager {
     public interface OnAllUserProfilesLoadedListener {
         void onAllUserProfilesLoaded(ArrayList<UserProfile> userProfiles);
     }
+    public interface OnUserProfileUpdatedListener {
+        void onUserProfileUpdated(UserProfile userProfile);
+    }
+
 
 }

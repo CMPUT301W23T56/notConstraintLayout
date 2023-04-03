@@ -1,8 +1,11 @@
 package com.example.notconstraintlayout.ui.explore;
 
 import static android.content.ContentValues.TAG;
+import com.example.notconstraintlayout.ui.explore.RecyclerItemClickListener;
+
 
 import android.Manifest;
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.location.Criteria;
@@ -14,6 +17,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
@@ -101,6 +106,41 @@ public class ExploreFragment extends Fragment implements OnMapReadyCallback, Loc
                 }
             }
         });
+        recyclerView = root.findViewById(R.id.explore_list);
+        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+
+        recyclerView.addOnItemTouchListener(new RecyclerItemClickListener(getContext(), recyclerView, new RecyclerItemClickListener.OnItemClickListener() {
+
+            public void onItemClick(View view, int position) {
+                QrClass selectedQrCode = qrArray.get(position);
+
+                LayoutInflater inflater = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                View customView = inflater.inflate(R.layout.explore_details_dialog, null);
+
+                TextView detailsText = customView.findViewById(R.id.explore_details_text);
+                ImageView detailsImage = customView.findViewById(R.id.explore_details_image);
+
+                detailsText.setText("Name: " + selectedQrCode.getName() + "\nScore: " + selectedQrCode.getPoints() + "\nScanned by " + selectedQrCode.getScannedBy() + " others" + "\n" + selectedQrCode.getFace());
+
+                if (selectedQrCode.getLocation_image() != null) {
+                    detailsImage.setImageBitmap(selectedQrCode.getLocation_image());
+                } else {
+                    detailsImage.setVisibility(View.GONE);
+                }
+
+                new AlertDialog.Builder(getContext())
+                        .setTitle("Details")
+                        .setPositiveButton(android.R.string.ok, null)
+                        .setView(customView)
+                        .show();
+            }
+
+            @Override
+            public void onLongItemClick(View view, int position) {
+                // You can handle long item clicks if needed
+            }
+        }));
+
 
         // Get the location manager and set the location provider
         locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
@@ -128,10 +168,11 @@ public class ExploreFragment extends Fragment implements OnMapReadyCallback, Loc
                 userLocation = locationManager.getLastKnownLocation(locationProvider);
             }
         }
-        recyclerView = root.findViewById(R.id.explore_list);
-        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        return root;
+    return root;
+
+
+
     }
 
 
@@ -214,5 +255,8 @@ public class ExploreFragment extends Fragment implements OnMapReadyCallback, Loc
 
     public void onProviderDisabled(String provider) {
         // Handle provider disabled here
+    }
+
+    private class OnItemClickListener {
     }
 }

@@ -6,6 +6,8 @@
     <string name="title_dasboard">Dashboard</string>
     <string name="title_explore">Explore</string>
     <string name="title_leaderboard">Leaderboard</string>
+    <string name="location_image">Location image</string>
+
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

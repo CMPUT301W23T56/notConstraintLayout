@@ -13,7 +13,29 @@ public class QrClass {
     private String name;
     private int points;
     private String face;
+
+    public Bitmap getLocation_image() {
+        return location_image;
+    }
+
+    public void setLocation_image(Bitmap location_image) {
+        this.location_image = location_image;
+    }
+
     private Bitmap location_image;
+
+    public QrClass(String hash, String name, int points, String face) {
+        this.hash = hash;
+        this.name = name;
+        this.points = points;
+        this.face = face;
+    }
+
+
+
+
+
+
 
     private int scannedBy = 0;
 
@@ -27,7 +49,7 @@ public class QrClass {
         this.imageUrl = imageUrl;
     }
 
-    public QrClass(String hash) {
+    public QrClass(String hash, int score) {
         this.hash = hash;
     }
 
@@ -50,13 +72,9 @@ public class QrClass {
         this.location = location;
     }
 
-    public Bitmap getLocation_image() {
-        return location_image;
-    }
 
-    public void setLocation_image(Bitmap location_image) {
-        this.location_image = location_image;
-    }
+
+
 
     public String getName() {
         return name;

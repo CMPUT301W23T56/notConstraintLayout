@@ -3,14 +3,12 @@ package com.example.notconstraintlayout.ui.dashboard;
 import static android.content.ContentValues.TAG;
 
 import android.Manifest;
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
@@ -43,18 +41,14 @@ import com.example.notconstraintlayout.userDBManager;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.firestore.GeoPoint;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
-import com.google.firebase.storage.UploadTask;
 import com.journeyapps.barcodescanner.ScanContract;
 import com.journeyapps.barcodescanner.ScanOptions;
 
-import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.ArrayList;
@@ -216,7 +210,6 @@ public class DashboardFragment extends Fragment implements userDBManager.OnUserD
                         }
                     }
                 });
-                isDescending = !isDescending;
                 mAdapter.notifyDataSetChanged();
             }
         });
@@ -251,6 +244,7 @@ public class DashboardFragment extends Fragment implements userDBManager.OnUserD
     }
 
     private static final int PERMISSION_REQUEST_CAMERA = 2;
+
     public void openCameraToTakePicture() {
         if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(requireActivity(), new String[]{Manifest.permission.CAMERA}, PERMISSION_REQUEST_CAMERA);
@@ -260,45 +254,6 @@ public class DashboardFragment extends Fragment implements userDBManager.OnUserD
             if (takePictureIntent.resolveActivity(requireActivity().getPackageManager()) != null) {
                 startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
             }
-        }
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        Log.d(TAG, "Camera onActivityResult" + String.valueOf(resultCode));
-
-        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == Activity.RESULT_OK) {
-            Bundle extras = data.getExtras();
-            Bitmap imageBitmap = (Bitmap) extras.get("data");
-
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            imageBitmap.compress(Bitmap.CompressFormat.JPEG, 50, outputStream); // Compress the image
-            imageData = outputStream.toByteArray();
-
-            StorageReference storageRef = storage.getReference();
-            StorageReference imageRef = storageRef.child("images/" + qrClass.getHash());
-            UploadTask uploadTask = imageRef.putBytes(imageData);
-            uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                @Override
-                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                    Log.d(TAG, "Image uploaded to Firebase Storage.");
-                    // Get the download URL of the uploaded image
-                    imageRef.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-                        @Override
-                        public void onSuccess(Uri uri) {
-                            String imageUrl = uri.toString();
-                            qrClass.setImageUrl(imageUrl);
-                            Log.d(TAG, "Image URL set");
-                        }
-                    });
-                }
-            }).addOnFailureListener(new OnFailureListener() {
-                @Override
-                public void onFailure(@NonNull Exception e) {
-                    Log.e(TAG, "Failed to upload image to Firebase Storage.", e);
-                }
-            });
         }
     }
 

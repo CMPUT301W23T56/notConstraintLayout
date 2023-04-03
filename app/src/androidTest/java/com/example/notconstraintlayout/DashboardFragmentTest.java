@@ -83,5 +83,4 @@ public class DashboardFragmentTest {
             assertTrue("Empty list",solo.getCurrentViews(ListView.class).get(0).getCount() == 0);
         });
     }
-
 }

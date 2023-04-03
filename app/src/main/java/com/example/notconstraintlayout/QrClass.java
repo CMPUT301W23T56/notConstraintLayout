@@ -73,8 +73,9 @@ public class QrClass {
     }
 
 
-
-
+    public void setFace(String face) {
+        this.face = face;
+    }
 
     public String getName() {
         return name;
@@ -108,7 +109,8 @@ public class QrClass {
         return scannedBy;
     }
 
-    public void setScannedBy(int scannedBy) {
+    public int setScannedBy(int scannedBy) {
         this.scannedBy = scannedBy;
+        return scannedBy;
     }
 }

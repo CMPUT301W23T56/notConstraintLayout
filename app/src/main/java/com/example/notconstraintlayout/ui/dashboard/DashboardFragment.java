@@ -3,12 +3,14 @@ package com.example.notconstraintlayout.ui.dashboard;
 import static android.content.ContentValues.TAG;
 
 import android.Manifest;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
@@ -30,6 +32,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
+import com.bumptech.glide.Glide;
 import com.example.notconstraintlayout.CaptureAct;
 import com.example.notconstraintlayout.QrClass;
 import com.example.notconstraintlayout.QrCodeAdapter;
@@ -41,14 +44,18 @@ import com.example.notconstraintlayout.userDBManager;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.firestore.GeoPoint;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 import com.journeyapps.barcodescanner.ScanContract;
 import com.journeyapps.barcodescanner.ScanOptions;
 
+import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.ArrayList;
@@ -137,14 +144,22 @@ public class DashboardFragment extends Fragment implements userDBManager.OnUserD
                 // Inflate the custom dialog layout
                 LayoutInflater inflater = LayoutInflater.from(requireContext());
                 View dialogView = inflater.inflate(R.layout.qr_code_details_dialog, null);
+                if (dialogView != null) {
+                    ImageView locationImageView = dialogView.findViewById(R.id.location_image_view);
+                    Bitmap locationImage = qrCodeToDelete.getLocation_image();
+                    // set the locationImage to the ImageView here
+                }
 
                 // Get the ImageView and set the image
                 ImageView locationImageView = dialogView.findViewById(R.id.location_image_view);
                 Bitmap locationImage = qrCodeToDelete.getLocation_image();
-                if (locationImage != null) {
-                    locationImageView.setImageBitmap(locationImage);
-                }
+                String imageUrl = qrCodeToDelete.getImageUrl(); // Get the image URL from the qrClass
 
+                if (imageUrl != null) {
+                    Glide.with(requireContext())
+                            .load(imageUrl)
+                            .into(locationImageView);
+                }
 
                 // Create and show the AlertDialog
                 new AlertDialog.Builder(requireContext())
@@ -256,6 +271,42 @@ public class DashboardFragment extends Fragment implements userDBManager.OnUserD
             }
         }
     }
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        Log.d(TAG, "Camera onActivityResult" + String.valueOf(resultCode));
+        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == Activity.RESULT_OK) {
+            Bundle extras = data.getExtras();
+            Bitmap imageBitmap = (Bitmap) extras.get("data");
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            imageBitmap.compress(Bitmap.CompressFormat.JPEG, 50, outputStream); // Compress the image
+            imageData = outputStream.toByteArray();
+
+            StorageReference storageRef = storage.getReference();
+            StorageReference imageRef = storageRef.child("images/" + qrClass.getHash());
+            UploadTask uploadTask = imageRef.putBytes(imageData);
+            uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                @Override
+                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                    Log.d(TAG, "Image uploaded to Firebase Storage.");
+                    // Get the download URL of the uploaded image
+                    imageRef.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                        @Override
+                        public void onSuccess(Uri uri) {
+                            String imageUrl = uri.toString();
+                            qrClass.setImageUrl(imageUrl);
+                            Log.d(TAG, "Image URL set");
+                        }
+                    });
+                }
+            }).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                    Log.e(TAG, "Failed to upload image to Firebase Storage.", e);
+                }
+            });
+        }
+    }
 
 
 
@@ -278,8 +329,12 @@ public class DashboardFragment extends Fragment implements userDBManager.OnUserD
                 String hash = String.valueOf(result.getContents().hashCode());
                 qrClass = new QrClass(name, score, String.valueOf(result.getContents().hashCode()));
 
+                qrClass.setFace(generateTextFace(hash));
                 LayoutInflater inflater = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
                 View customView = inflater.inflate(R.layout.custom_alert_dialog, null);
+
+                TextView face = customView.findViewById(R.id.face_text_view);
+                face.setText(qrClass.getFace());
 
                 TextView nameAndScore = customView.findViewById(R.id.name_and_score);
                 nameAndScore.setText("Your Qr Name is: " + name + "\nYour Score is: " + score);
